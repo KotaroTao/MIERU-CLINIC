@@ -26,18 +26,18 @@ export async function POST(request: NextRequest) {
 
     const { name, role, email, password, userRole } = parsed.data
 
-    // メールアドレスの重複チェック
-    if (email) {
-      const existingUser = await prisma.user.findUnique({
-        where: { email: email.toLowerCase() },
-      })
-      if (existingUser) {
-        return errorResponse("このメールアドレスは既に使用されています", 400)
-      }
-    }
-
-    // トランザクションで Staff + User を一括作成
+    // トランザクションで重複チェック + Staff + User を一括作成
     const result = await prisma.$transaction(async (tx) => {
+      // メールアドレスの重複チェック（トランザクション内で実行）
+      if (email) {
+        const existingUser = await tx.user.findUnique({
+          where: { email: email.toLowerCase() },
+        })
+        if (existingUser) {
+          throw new Error("EMAIL_DUPLICATE")
+        }
+      }
+
       const staff = await tx.staff.create({
         data: {
           clinicId,
@@ -69,7 +69,10 @@ export async function POST(request: NextRequest) {
       hasLogin: !!result.user,
       userEmail: result.user?.email,
     }, 201)
-  } catch {
+  } catch (e) {
+    if (e instanceof Error && e.message === "EMAIL_DUPLICATE") {
+      return errorResponse(messages.staff.emailDuplicate, 400)
+    }
     return errorResponse(messages.common.error, 500)
   }
 }

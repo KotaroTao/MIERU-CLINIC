@@ -596,7 +596,7 @@ export const messages = {
     deactivate: "無効化",
     activate: "有効化",
     delete: "削除",
-    deleteConfirm: "「{name}」を削除しますか？\n\n※ このスタッフに紐づいたアンケート回答データは保持されます。",
+    deleteConfirm: "「{name}」を削除しますか？\n\n※ このスタッフに紐づいたアンケート回答データは保持されます。\n※ ログインアカウントが設定されている場合、アカウントも削除されます。",
     deleteFailed: "スタッフの削除に失敗しました",
     noStaffAlert: "まずはスタッフを登録しましょう",
     noStaffAlertDesc: "スタッフを登録すると、アンケート時に担当者を選択できるようになります",

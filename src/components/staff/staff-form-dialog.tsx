@@ -22,6 +22,7 @@ export function StaffFormDialog({
   onSuccess,
 }: StaffFormDialogProps) {
   const isEdit = !!staff
+  const hasExistingLogin = isEdit && staff.hasLogin
   const [name, setName] = useState(staff?.name ?? "")
   const [role, setRole] = useState(staff?.role ?? "staff")
   const [enableLogin, setEnableLogin] = useState(false)
@@ -41,7 +42,7 @@ export function StaffFormDialog({
       const method = isEdit ? "PATCH" : "POST"
 
       const payload: Record<string, unknown> = { name, role, clinicId }
-      if (!isEdit && enableLogin) {
+      if (enableLogin && !hasExistingLogin) {
         payload.email = email
         payload.password = password
         payload.userRole = userRole
@@ -101,8 +102,8 @@ export function StaffFormDialog({
             </select>
           </div>
 
-          {/* ログイン設定（新規作成時のみ） */}
-          {!isEdit && (
+          {/* ログイン設定（未設定の場合のみ表示） */}
+          {!hasExistingLogin && (
             <div className="space-y-3 rounded-md border p-3">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
