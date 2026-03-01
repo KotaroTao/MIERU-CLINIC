@@ -4,6 +4,7 @@ import { createStaffSchema } from "@/lib/validations/staff"
 import { requireRole, isAuthError } from "@/lib/auth-helpers"
 import { successResponse, errorResponse } from "@/lib/api-helpers"
 import { messages } from "@/lib/messages"
+import bcrypt from "bcryptjs"
 
 export async function POST(request: NextRequest) {
   const authResult = await requireRole("clinic_admin", "system_admin")
@@ -19,18 +20,55 @@ export async function POST(request: NextRequest) {
     const parsed = createStaffSchema.safeParse(body)
 
     if (!parsed.success) {
-      return errorResponse(messages.common.error, 400)
+      const firstError = parsed.error.errors[0]
+      return errorResponse(firstError?.message || messages.common.error, 400)
     }
 
-    const staff = await prisma.staff.create({
-      data: {
-        clinicId,
-        name: parsed.data.name,
-        role: parsed.data.role,
-      },
+    const { name, role, email, password, userRole } = parsed.data
+
+    // メールアドレスの重複チェック
+    if (email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+      })
+      if (existingUser) {
+        return errorResponse("このメールアドレスは既に使用されています", 400)
+      }
+    }
+
+    // トランザクションで Staff + User を一括作成
+    const result = await prisma.$transaction(async (tx) => {
+      const staff = await tx.staff.create({
+        data: {
+          clinicId,
+          name,
+          role,
+        },
+      })
+
+      let user = null
+      if (email && password) {
+        const hashedPassword = await bcrypt.hash(password, 10)
+        user = await tx.user.create({
+          data: {
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            name,
+            role: userRole ?? "staff",
+            clinicId,
+            staffId: staff.id,
+          },
+        })
+      }
+
+      return { staff, user }
     })
 
-    return successResponse(staff, 201)
+    return successResponse({
+      ...result.staff,
+      hasLogin: !!result.user,
+      userEmail: result.user?.email,
+    }, 201)
   } catch {
     return errorResponse(messages.common.error, 500)
   }

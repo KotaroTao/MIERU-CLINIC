@@ -149,6 +149,10 @@ export interface StaffWithStats {
   createdAt: Date | string
   updatedAt: Date | string
   surveyCount: number
+  // ログイン情報
+  hasLogin: boolean
+  userEmail?: string | null
+  userRole?: string | null
 }
 
 export interface SatisfactionTrend {

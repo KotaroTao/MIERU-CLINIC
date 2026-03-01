@@ -601,6 +601,18 @@ export const messages = {
     noStaffAlert: "まずはスタッフを登録しましょう",
     noStaffAlertDesc: "スタッフを登録すると、アンケート時に担当者を選択できるようになります",
     goToStaffManagement: "スタッフ管理へ",
+    // ログイン設定
+    enableLogin: "ダッシュボードアクセスを許可",
+    enableLoginDesc: "メールアドレスとパスワードでログインできるようにします",
+    email: "メールアドレス",
+    password: "パスワード",
+    passwordMinLength: "6文字以上",
+    userRole: "権限",
+    userRoleStaff: "スタッフ",
+    userRoleAdmin: "管理者",
+    loginEnabled: "ログインあり",
+    loginDisabled: "ログインなし",
+    emailDuplicate: "このメールアドレスは既に使用されています",
   },
   kiosk: {
     nextPatient: "次の患者さまへ",
