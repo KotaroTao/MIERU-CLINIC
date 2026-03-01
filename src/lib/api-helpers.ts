@@ -39,8 +39,12 @@ export function parseAttributeFilters(params: URLSearchParams): AttributeFilters
   return hasAny ? filters : undefined
 }
 
-export function successResponse(data: unknown, status = 200) {
-  return NextResponse.json(data, { status })
+export function successResponse(data: unknown, status = 200, cacheSeconds?: number) {
+  const headers: Record<string, string> = {}
+  if (cacheSeconds && cacheSeconds > 0) {
+    headers["Cache-Control"] = `private, max-age=${cacheSeconds}, stale-while-revalidate=${cacheSeconds * 2}`
+  }
+  return NextResponse.json(data, { status, headers })
 }
 
 export function errorResponse(

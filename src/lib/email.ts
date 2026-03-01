@@ -1,4 +1,5 @@
 import crypto from "crypto"
+import { logger } from "@/lib/logger"
 
 /**
  * メール送信ユーティリティ
@@ -35,22 +36,18 @@ export async function sendMail({ to, subject, html }: SendMailOptions): Promise<
       })
       if (!res.ok) {
         const body = await res.text().catch(() => "")
-        console.error(`[sendMail] API responded ${res.status}: ${body}`)
+        logger.error("Mail API responded with error", { component: "sendMail", status: res.status, body })
         return false
       }
       return true
     } catch (err) {
-      console.error("[sendMail] SMTP error:", err)
+      logger.error("Mail send failed", { component: "sendMail", error: String(err) })
       return false
     }
   }
 
   // フォールバック: コンソールにログ出力（開発用）
-  console.log("─── [sendMail] ───")
-  console.log(`To: ${to}`)
-  console.log(`Subject: ${subject}`)
-  console.log(`Body:\n${html}`)
-  console.log("──────────────────")
+  logger.info("Mail sent (dev fallback)", { component: "sendMail", to, subject })
   return true
 }
 

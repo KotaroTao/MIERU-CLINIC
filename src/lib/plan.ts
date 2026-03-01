@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client"
 import type { ClinicSettings, PlanTier, PlanInfo, SpecialPlanProgress } from "@/types"
 import { PLAN_ORDER, FEATURE_REQUIREMENTS, TRIAL_DURATION_DAYS, DEFAULTS } from "@/lib/constants"
 import { prisma } from "@/lib/prisma"
+import { logger } from "@/lib/logger"
 import { jstNowParts, jstStartOfMonth, jstEndOfMonth } from "@/lib/date-jst"
 
 /** プランの数値レベルを返す（比較用） */
@@ -247,7 +248,7 @@ export async function evaluateSpecialPlanProgress(
         )
       WHERE id = ${clinicId}::uuid
     `.catch((err) => {
-      console.error("[specialPlan] Failed to persist evaluation:", err)
+      logger.error("Failed to persist special plan evaluation", { component: "specialPlan", error: String(err) })
     })
   }
 

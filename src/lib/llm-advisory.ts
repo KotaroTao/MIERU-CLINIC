@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { z } from "zod"
 import type { AdvisorySection } from "@/types"
+import { logger } from "@/lib/logger"
 
 // ─── LLM Advisory Engine ───
 // ルールベース分析の全結果 + 定量データを LLM に渡し、
@@ -266,7 +267,7 @@ ${posComments}`
     return { output: parsed, error: null }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
-    console.error("[LLM Advisory] Failed:", message)
+    logger.error("LLM advisory call failed", { component: "llm-advisory", error: message })
     return { output: null, error: message }
   }
 }

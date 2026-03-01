@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { generateLLMAdvisory, llmOutputToSections } from "@/lib/llm-advisory"
 import type { LLMAdvisoryInput, LLMAdvisoryResult } from "@/lib/llm-advisory"
+import { logger } from "@/lib/logger"
 import {
   ADVISORY,
   QUESTION_CATEGORY_MAP,
@@ -2125,7 +2126,7 @@ async function runLLMAnalysis(
     }
     return [] // APIキー未設定 → サイレントスキップ
   } catch (e) {
-    console.error("[Advisory] LLM analysis skipped:", e)
+    logger.error("LLM analysis skipped due to error", { component: "advisory", error: String(e) })
     return [{
       title: "AI分析",
       content: "AI分析中に予期しないエラーが発生しました。ルールベースの分析結果をご確認ください。",
