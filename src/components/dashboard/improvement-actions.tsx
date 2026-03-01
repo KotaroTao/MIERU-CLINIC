@@ -892,6 +892,17 @@ export function ImprovementActionsView({
                                 {messages.platformActions.outcomeScore} {outcome.avgScoreImprovement > 0 ? "+" : ""}{outcome.avgScoreImprovement}
                               </span>
                             )}
+                            {outcome.avgDurationDays != null && (
+                              <span className="text-[11px] text-purple-600">
+                                {messages.platformActions.outcomeDuration}{" "}
+                                <span className="font-bold text-slate-600">
+                                  {outcome.avgDurationDays < 60
+                                    ? `${outcome.avgDurationDays}${messages.platformActions.outcomeDaysUnit}`
+                                    : `${(outcome.avgDurationDays / 30).toFixed(1)}${messages.platformActions.outcomeMonthsUnit}`
+                                  }
+                                </span>
+                              </span>
+                            )}
                             {outcome.confidence === "high" ? (
                               <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-medium text-green-700">
                                 {messages.platformActions.confidenceHigh}
