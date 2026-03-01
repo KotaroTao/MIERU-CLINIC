@@ -107,7 +107,7 @@ interface Props {
   seasonalIndices?: SeasonalIndices
   platformActionOutcomes?: Record<string, PlatformActionOutcome>
   isDemo?: boolean
-  hasMetricsPin?: boolean
+  isOwner?: boolean
 }
 
 export function ImprovementActionsView({
@@ -121,7 +121,7 @@ export function ImprovementActionsView({
   seasonalIndices,
   platformActionOutcomes = {},
   isDemo = false,
-  hasMetricsPin = false,
+  isOwner = false,
 }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -131,13 +131,6 @@ export function ImprovementActionsView({
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // 経営指標のPINロック状態: PIN設定済みでセッション未解除なら非表示
-  const [metricsUnlocked, setMetricsUnlocked] = useState(!hasMetricsPin)
-  useEffect(() => {
-    if (hasMetricsPin && typeof window !== "undefined") {
-      setMetricsUnlocked(sessionStorage.getItem("metricsUnlocked") === "1")
-    }
-  }, [hasMetricsPin])
   const [adoptedIds, setAdoptedIds] = useState<Set<string>>(new Set(initialAdopted))
   const [adoptingId, setAdoptingId] = useState<string | null>(null)
   const [adoptQuestionSelect, setAdoptQuestionSelect] = useState<{ platformActionId: string; questionIds: string[] } | null>(null)
@@ -1080,7 +1073,7 @@ export function ImprovementActionsView({
                 seasonalIndices={seasonalIndices}
                 platformActionOutcomes={platformActionOutcomes}
                 isDemo={isDemo}
-                metricsUnlocked={metricsUnlocked}
+                isOwner={isOwner}
               />
             )
           })}
@@ -1139,7 +1132,7 @@ export function ImprovementActionsView({
                 seasonalIndices={seasonalIndices}
                 platformActionOutcomes={platformActionOutcomes}
                 isDemo={isDemo}
-                metricsUnlocked={metricsUnlocked}
+                isOwner={isOwner}
               />
             )
           })}
@@ -1179,7 +1172,7 @@ function ActionCard({
   seasonalIndices,
   platformActionOutcomes,
   isDemo,
-  metricsUnlocked,
+  isOwner,
 }: {
   action: ImprovementAction
   expanded: boolean
@@ -1210,7 +1203,7 @@ function ActionCard({
   seasonalIndices?: SeasonalIndices
   platformActionOutcomes?: Record<string, PlatformActionOutcome>
   isDemo?: boolean
-  metricsUnlocked?: boolean
+  isOwner?: boolean
 }) {
   const isActive = action.status === "active"
   const isCompleted = action.status === "completed"
@@ -1516,8 +1509,8 @@ function ActionCard({
               </div>
             )}
 
-            {/* Business metrics comparison — PINロック解除時のみ表示 */}
-            {metricsUnlocked && metricsComparison && (
+            {/* Business metrics comparison — オーナーのみ表示 */}
+            {isOwner && metricsComparison && (
               <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 space-y-2">
                 <p className="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
                   <BarChart3 className="h-3 w-3" />
@@ -1574,7 +1567,7 @@ function ActionCard({
                 </div>
               </div>
             )}
-            {metricsUnlocked && !metricsComparison && expanded && monthlyMetrics && monthlyMetrics.length < 2 && (
+            {isOwner && !metricsComparison && expanded && monthlyMetrics && monthlyMetrics.length < 2 && (
               <div className="rounded-lg border border-dashed border-slate-200 p-3 text-center">
                 <p className="text-[11px] text-muted-foreground">
                   <BarChart3 className="inline h-3 w-3 mr-1" />
