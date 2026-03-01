@@ -158,6 +158,7 @@ export default async function ActionsPage() {
         seasonalIndices={seasonalIndices}
         platformActionOutcomes={platformActionOutcomes}
         isDemo={clinic?.slug === "demo-dental"}
+        hasMetricsPin={!!((clinic?.settings as ClinicSettings | null)?.metricsPin)}
       />
     </div>
   )
