@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger"
+
 /**
  * Cloudflare Turnstile サーバーサイド検証
  *
@@ -41,7 +43,7 @@ export async function verifyTurnstileToken(token: string | null | undefined): Pr
     const data: TurnstileVerifyResult = await res.json()
     return data.success
   } catch (err) {
-    console.error("[Turnstile] Verification failed:", err)
+    logger.error("Turnstile verification failed", { component: "turnstile", error: String(err) })
     return false
   }
 }

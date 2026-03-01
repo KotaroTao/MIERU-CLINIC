@@ -3,6 +3,7 @@ import { successResponse, errorResponse } from "@/lib/api-helpers"
 import { prisma } from "@/lib/prisma"
 import { getTokenTimestamp, sendMail, buildWelcomeEmail } from "@/lib/email"
 import { messages } from "@/lib/messages"
+import { logger } from "@/lib/logger"
 
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
 
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
     const loginUrl = `${appUrl}/login`
     const { subject, html } = buildWelcomeEmail(updatedUser.clinic.name, loginUrl)
     sendMail({ to: updatedUser.email, subject, html }).catch((err) => {
-      console.error("[verify-email] Failed to send welcome email:", err)
+      logger.error("Failed to send welcome email", { component: "verify-email", error: String(err) })
     })
   }
 

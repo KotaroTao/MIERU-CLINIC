@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { MILESTONES, DEFAULTS, getRank, getNextRank } from "@/lib/constants"
 import type { Rank } from "@/lib/constants"
 import type { ClinicSettings } from "@/types"
+import { logger } from "@/lib/logger"
 import {
   jstToday,
   jstDaysAgo,
@@ -306,7 +307,7 @@ export async function getStaffEngagementData(
         )
       WHERE id = ${clinicId}::uuid
     `.catch((err) => {
-      console.error("[dailyGoal] Failed to persist goal streak:", err)
+      logger.error("Failed to persist goal streak", { component: "dailyGoal", error: String(err) })
     })
 
     // Recalculate dailyGoal if level changed and source is metrics

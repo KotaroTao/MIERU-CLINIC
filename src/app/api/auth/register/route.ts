@@ -3,6 +3,7 @@ import { successResponse, errorResponse } from "@/lib/api-helpers"
 import { prisma } from "@/lib/prisma"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { getClientIp } from "@/lib/ip"
+import { logger } from "@/lib/logger"
 import { verifyTurnstileToken } from "@/lib/turnstile"
 import { sendMail, generateVerificationToken, buildVerificationEmail } from "@/lib/email"
 import { messages } from "@/lib/messages"
@@ -206,7 +207,7 @@ export async function POST(request: NextRequest) {
   const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}`
   const { subject, html } = buildVerificationEmail(verifyUrl, clinicName.trim())
   sendMail({ to: email.trim().toLowerCase(), subject, html }).catch((err) => {
-    console.error("[register] Failed to send verification email:", err)
+    logger.error("Failed to send verification email", { component: "register", error: String(err) })
   })
 
   return successResponse({
