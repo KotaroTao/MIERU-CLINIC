@@ -153,15 +153,16 @@ function prevMonthBounds(): { key: string; start: Date; end: Date } {
   }
 }
 
-/** クリニックの登録月 YYYY-MM を返す */
+/** クリニックの登録月 YYYY-MM を返す（JST基準） */
 async function getClinicCreatedMonth(clinicId: string): Promise<string> {
   const clinic = await prisma.clinic.findUnique({
     where: { id: clinicId },
     select: { createdAt: true },
   })
   if (!clinic) return "9999-12"
-  const d = clinic.createdAt
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`
+  // createdAt はUTC。JST変換して年月を取得（他関数と同じJST基準に統一）
+  const jst = new Date(clinic.createdAt.getTime() + 9 * 60 * 60 * 1000)
+  return `${jst.getUTCFullYear()}-${String(jst.getUTCMonth() + 1).padStart(2, "0")}`
 }
 
 /**

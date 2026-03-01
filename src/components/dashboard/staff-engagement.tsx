@@ -110,18 +110,14 @@ export function StaffEngagement({
   async function handleToggleClosed(date: string, currentlyClosed: boolean) {
     setTogglingDate(date)
     try {
-      if (currentlyClosed) {
-        await fetch("/api/closed-dates", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date }),
-        })
-      } else {
-        await fetch("/api/closed-dates", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date }),
-        })
+      const res = await fetch("/api/closed-dates", {
+        method: currentlyClosed ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date }),
+      })
+      if (!res.ok) {
+        console.error("[closed-dates] API error:", res.status)
+        return
       }
       router.refresh()
     } finally {

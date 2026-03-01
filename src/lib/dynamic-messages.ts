@@ -35,14 +35,24 @@ interface DynamicMessage {
 }
 
 // ---------------------------------------------------------------------------
-// 時間帯判定
+// 時間帯判定（JST基準）
 // ---------------------------------------------------------------------------
 
 export function getTimeSlot(): TimeSlot {
-  const hour = new Date().getHours()
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const hour = jst.getUTCHours()
   if (hour < 12) return "morning"
   if (hour < 17) return "daytime"
   return "evening"
+}
+
+/** JST の YYYY-MM-DD を返す */
+function jstTodayKey(): string {
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const y = jst.getUTCFullYear()
+  const m = String(jst.getUTCMonth() + 1).padStart(2, "0")
+  const d = String(jst.getUTCDate()).padStart(2, "0")
+  return `${y}-${m}-${d}`
 }
 
 // ---------------------------------------------------------------------------
@@ -247,15 +257,17 @@ export const DYNAMIC_MESSAGES: DynamicMessage[] = [
 
 /**
  * 現在のコンテキストに合ったメッセージを1つ選ぶ。
- * - 条件付きメッセージ（状況に合うもの）を優先度順に収集
- * - 汎用メッセージを候補に追加
- * - 日付ベースの決定的ランダムで1つを選択（同じ日の同じ状況なら同じメッセージ）
+ *
+ * 構成: 「状況メッセージ（固定）」+「教育tips（毎回ランダム）」
+ * - 状況メッセージ: 目標達成・あと少し・スコア低めなど → 日付ベースで固定表示
+ * - 教育tips: 毎回ランダムに切り替わり読む楽しみを提供
+ * - 状況メッセージがない場合は教育tipsのみ表示
  */
 export function pickDashboardMessage(ctx: MessageContext): string {
   const time = getTimeSlot()
-  const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+  const today = jstTodayKey()
 
-  // 条件付きメッセージのうちマッチするものを収集
+  // 条件付きメッセージ（状況別）と汎用メッセージ（教育tips）を分離
   const contextual: DynamicMessage[] = []
   const generic: DynamicMessage[] = []
 
@@ -269,27 +281,21 @@ export function pickDashboardMessage(ctx: MessageContext): string {
     }
   }
 
-  // 最高優先度の条件付きメッセージを取得
-  let candidates: DynamicMessage[]
+  // 状況メッセージがある場合: 日付ベースで1つ固定選択
   if (contextual.length > 0) {
     const maxPriority = Math.max(...contextual.map((m) => m.priority ?? 0))
-    const topContextual = contextual.filter((m) => (m.priority ?? 0) === maxPriority)
-    // 最高優先度の条件メッセージ + 汎用メッセージの一部をミックス
-    // （条件メッセージ70%、汎用30%の重み付け）
-    candidates = topContextual.length >= 3 ? topContextual : [...topContextual, ...generic]
-  } else {
-    candidates = generic
+    const top = contextual.filter((m) => (m.priority ?? 0) === maxPriority)
+    const seed = hashString(`${today}-ctx-${maxPriority}`)
+    return top[Math.abs(seed) % top.length].text
   }
 
-  if (candidates.length === 0) {
+  // 状況メッセージがない場合: 教育tipsを毎回ランダム表示
+  if (generic.length === 0) {
     return "患者さまの「ありがとう」を増やす活動を続けましょう"
   }
 
-  // 日付ベースの決定的ハッシュでインデックスを選択
-  const seed = hashString(`${today}-${ctx.todayCount >= ctx.dailyGoal ? "achieved" : "progress"}-${ctx.streak}`)
-  const index = Math.abs(seed) % candidates.length
-
-  return candidates[index].text
+  const index = Math.floor(Math.random() * generic.length)
+  return generic[index].text
 }
 
 /** 簡易文字列ハッシュ (djb2) */
