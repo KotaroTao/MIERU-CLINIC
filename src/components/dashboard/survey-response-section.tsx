@@ -44,6 +44,7 @@ export function SurveyResponseSection({
       if (res.ok) {
         const data = await res.json()
         setResponses((prev) => [...prev, ...data.responses])
+        setCurrentTotal(data.total)
         setPage(nextPage)
       }
     } finally {

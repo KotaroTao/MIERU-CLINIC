@@ -40,7 +40,7 @@ interface ResponseItem {
 
 interface SurveyResponseListProps {
   responses: ResponseItem[]
-  onDelete?: (id: string) => void
+  onDelete: (id: string) => void
 }
 
 export function SurveyResponseList({ responses, onDelete }: SurveyResponseListProps) {
@@ -52,7 +52,7 @@ export function SurveyResponseList({ responses, onDelete }: SurveyResponseListPr
     try {
       const res = await fetch(`/api/surveys/${id}`, { method: "DELETE" })
       if (res.ok) {
-        onDelete?.(id)
+        onDelete(id)
       }
     } finally {
       setDeletingId(null)
