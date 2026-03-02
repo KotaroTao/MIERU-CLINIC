@@ -25,7 +25,8 @@ export function VerifyEmailPendingClient({ email }: VerifyEmailPendingClientProp
       } else if (res.status === 429) {
         setError(messages.auth.verifyEmailRateLimited)
       } else {
-        setError(messages.common.error)
+        const data = await res.json().catch(() => null)
+        setError(data?.error || messages.common.error)
       }
     } catch {
       setError(messages.common.error)

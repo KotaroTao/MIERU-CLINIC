@@ -56,14 +56,16 @@ export function RegisterForm({ plan }: RegisterFormProps) {
         }),
       })
 
+      const data = await res.json()
+
       if (!res.ok) {
-        const data = await res.json()
         setError(data.error || messages.auth.registerError)
         return
       }
 
-      // 登録成功 → メール認証案内ページへ
-      router.push("/verify-email/sent")
+      // 登録成功 → メール認証案内ページへ（メール送信失敗時はパラメータ付き）
+      const emailSent = data.data?.emailSent !== false
+      router.push(emailSent ? "/verify-email/sent" : "/verify-email/sent?emailFailed=1")
     } catch {
       setError(messages.auth.registerError)
     } finally {
