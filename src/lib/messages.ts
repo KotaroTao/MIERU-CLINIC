@@ -318,6 +318,25 @@ export const messages = {
     createActionFailed: "改善アクションの作成に失敗しました",
     createActionDuplicate: "作成済み",
     viewActions: "改善アクション管理へ",
+    // アドバイザーペルソナ
+    advisorName: "MIERUアドバイザー",
+    advisorRole: "あなた専属のAIコンサルタント",
+    // 優先度マトリクス
+    priorityMatrixTitle: "優先度マトリクス",
+    priorityMatrixDesc: "効果の大きさ × 実行の容易さで整理しました",
+    matrixHighImpactHighEase: "すぐやるべき",
+    matrixHighImpactLowEase: "計画的に取り組む",
+    matrixLowImpactHighEase: "余裕があれば",
+    matrixLowImpactLowEase: "後回しでOK",
+    matrixImpactAxis: "効果",
+    matrixEaseAxis: "実行しやすさ",
+    matrixHigh: "大",
+    matrixLow: "小",
+    // 今月のフォーカス
+    monthlyFocusTitle: "今月のフォーカス",
+    monthlyFocusDesc: "最もインパクトの大きい改善テーマ",
+    monthlyFocusStepsLabel: "具体的なアクションステップ",
+    monthlyFocusCreateAction: "このテーマで改善アクションを始める",
   },
   pxValue: {
     title: "PX-Value",

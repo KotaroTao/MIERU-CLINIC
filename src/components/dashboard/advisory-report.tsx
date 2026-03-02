@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, Fragment } from "react"
+import { useState, useCallback, Fragment, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { createPortal } from "react-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -40,10 +40,13 @@ import {
   ArrowRight,
   BookOpen,
   Star,
+  MessageCircle,
+  Focus,
+  Grid3X3,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Confetti } from "@/components/survey/confetti"
-import type { AdvisoryReportData, AdvisoryProgress, AdvisorySection } from "@/types"
+import type { AdvisoryReportData, AdvisoryProgress, AdvisorySection, AdvisorCommentData, AdvisorTone, PriorityMatrixItem, MonthlyFocusData } from "@/types"
 
 // ─── セクション設定 ───
 
@@ -169,6 +172,21 @@ const SECTION_CONFIG = {
     label: messages.advisory.clinicStoryTitle,
     color: "purple",
   },
+  advisor_comment: {
+    icon: MessageCircle,
+    label: messages.advisory.advisorName,
+    color: "purple",
+  },
+  priority_matrix: {
+    icon: Grid3X3,
+    label: messages.advisory.priorityMatrixTitle,
+    color: "indigo",
+  },
+  monthly_focus: {
+    icon: Focus,
+    label: messages.advisory.monthlyFocusTitle,
+    color: "rose",
+  },
 } as const
 
 const COLOR_MAP: Record<string, { border: string; bg: string; icon: string; text: string; muted: string }> = {
@@ -200,7 +218,7 @@ const TRIGGER_LABELS: Record<string, string> = {
 }
 
 // 特別表示するセクションタイプ（通常のセクションリストから除外）
-const SPECIAL_SECTION_TYPES = new Set(["highlight_discovery", "highlight_strength", "clinic_story"])
+const SPECIAL_SECTION_TYPES = new Set(["highlight_discovery", "highlight_strength", "clinic_story", "advisor_comment", "priority_matrix", "monthly_focus"])
 
 // ─── リッチコンテンツレンダラー ───
 
@@ -460,13 +478,18 @@ function SectionCard({
 function ClinicStoryCard({ section }: { section: AdvisorySection }) {
   return (
     <div className="rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <BookOpen className="h-4 w-4 text-purple-600" />
-        <h3 className="text-sm font-bold text-purple-800">{messages.advisory.clinicStoryTitle}</h3>
+      <div className="flex items-start gap-3">
+        <AdvisorAvatar size="md" />
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h3 className="text-sm font-bold text-purple-800">{messages.advisory.advisorName}</h3>
+            <span className="text-[10px] text-purple-500/70">{messages.advisory.advisorRole}</span>
+          </div>
+          <p className="text-sm leading-relaxed text-purple-900/80">
+            {section.content}
+          </p>
+        </div>
       </div>
-      <p className="text-sm leading-relaxed text-purple-900/80">
-        {section.content}
-      </p>
     </div>
   )
 }
@@ -726,6 +749,343 @@ function DiscoveryOverlay({
   )
 }
 
+// ─── アドバイザーアバター＆コメント ───
+
+const TONE_STYLES: Record<AdvisorTone, { bg: string; border: string; text: string; emoji: string }> = {
+  positive: { bg: "bg-green-50", border: "border-green-200", text: "text-green-800", emoji: "😊" },
+  concern: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-800", emoji: "🤔" },
+  encouragement: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-800", emoji: "💪" },
+  insight: { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-800", emoji: "💡" },
+}
+
+function AdvisorAvatar({ size = "sm" }: { size?: "sm" | "md" }) {
+  const dim = size === "md" ? "h-10 w-10" : "h-8 w-8"
+  const textSize = size === "md" ? "text-base" : "text-sm"
+  return (
+    <div className={cn(
+      dim,
+      "shrink-0 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-md"
+    )}>
+      <span className={cn(textSize, "text-white font-bold")}>M</span>
+    </div>
+  )
+}
+
+function AdvisorCommentBubble({ data }: { data: AdvisorCommentData }) {
+  const style = TONE_STYLES[data.tone] || TONE_STYLES.insight
+  return (
+    <div className="flex items-start gap-3 py-2">
+      <AdvisorAvatar />
+      <div className={cn(
+        "relative flex-1 rounded-xl border px-4 py-3",
+        style.bg, style.border
+      )}>
+        {/* Speech bubble arrow */}
+        <div className={cn(
+          "absolute -left-2 top-3 h-0 w-0",
+          "border-y-[6px] border-y-transparent border-r-[8px]",
+          style.border.replace("border-", "border-r-")
+        )} />
+        <div className="flex items-start gap-2">
+          <span className="text-base shrink-0">{style.emoji}</span>
+          <div>
+            <p className={cn("text-xs font-bold mb-0.5", style.text)}>
+              {messages.advisory.advisorName}
+            </p>
+            <p className={cn("text-sm leading-relaxed", style.text)}>
+              {data.comment}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── 優先度マトリクス ───
+
+function PriorityMatrixCard({ items }: { items: PriorityMatrixItem[] }) {
+  if (items.length === 0) return null
+
+  const quadrants = {
+    highHigh: items.filter((i) => i.impact === "high" && i.ease === "high"),
+    highLow: items.filter((i) => i.impact === "high" && i.ease === "low"),
+    lowHigh: items.filter((i) => i.impact === "low" && i.ease === "high"),
+    lowLow: items.filter((i) => i.impact === "low" && i.ease === "low"),
+  }
+
+  return (
+    <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-5">
+      <div className="flex items-center gap-2 mb-1">
+        <Grid3X3 className="h-4 w-4 text-indigo-600" />
+        <h3 className="text-sm font-bold text-indigo-800">
+          {messages.advisory.priorityMatrixTitle}
+        </h3>
+      </div>
+      <p className="text-xs text-indigo-600/70 mb-4">
+        {messages.advisory.priorityMatrixDesc}
+      </p>
+
+      {/* 2x2 Grid */}
+      <div className="relative">
+        {/* Axis labels */}
+        <div className="flex items-center justify-center gap-1 mb-2">
+          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+            {messages.advisory.matrixEaseAxis}
+          </span>
+        </div>
+
+        <div className="flex gap-2">
+          {/* Y-axis label */}
+          <div className="flex items-center">
+            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider [writing-mode:vertical-lr] rotate-180">
+              {messages.advisory.matrixImpactAxis}
+            </span>
+          </div>
+
+          <div className="flex-1 grid grid-cols-2 gap-2">
+            {/* Top-left: High Impact, High Ease → Best */}
+            <div className="rounded-lg bg-green-100/80 border border-green-300 p-3 min-h-[80px]">
+              <p className="text-[10px] font-bold text-green-700 mb-1.5">
+                {messages.advisory.matrixHighImpactHighEase}
+              </p>
+              {quadrants.highHigh.map((item, i) => (
+                <div key={i} className="mb-1 last:mb-0">
+                  <p className="text-xs font-medium text-green-800">{item.action}</p>
+                  <p className="text-[10px] text-green-600/80">{item.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Top-right: High Impact, Low Ease → Plan */}
+            <div className="rounded-lg bg-amber-100/80 border border-amber-300 p-3 min-h-[80px]">
+              <p className="text-[10px] font-bold text-amber-700 mb-1.5">
+                {messages.advisory.matrixHighImpactLowEase}
+              </p>
+              {quadrants.highLow.map((item, i) => (
+                <div key={i} className="mb-1 last:mb-0">
+                  <p className="text-xs font-medium text-amber-800">{item.action}</p>
+                  <p className="text-[10px] text-amber-600/80">{item.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom-left: Low Impact, High Ease → Nice to have */}
+            <div className="rounded-lg bg-blue-100/80 border border-blue-300 p-3 min-h-[80px]">
+              <p className="text-[10px] font-bold text-blue-700 mb-1.5">
+                {messages.advisory.matrixLowImpactHighEase}
+              </p>
+              {quadrants.lowHigh.map((item, i) => (
+                <div key={i} className="mb-1 last:mb-0">
+                  <p className="text-xs font-medium text-blue-800">{item.action}</p>
+                  <p className="text-[10px] text-blue-600/80">{item.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom-right: Low Impact, Low Ease → Skip */}
+            <div className="rounded-lg bg-slate-100/80 border border-slate-300 p-3 min-h-[80px]">
+              <p className="text-[10px] font-bold text-slate-500 mb-1.5">
+                {messages.advisory.matrixLowImpactLowEase}
+              </p>
+              {quadrants.lowLow.map((item, i) => (
+                <div key={i} className="mb-1 last:mb-0">
+                  <p className="text-xs font-medium text-slate-700">{item.action}</p>
+                  <p className="text-[10px] text-slate-500/80">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Axis corner labels */}
+        <div className="flex justify-between mt-1 ml-6">
+          <span className="text-[9px] text-indigo-400">{messages.advisory.matrixHigh}</span>
+          <span className="text-[9px] text-indigo-400">{messages.advisory.matrixLow}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── 今月のフォーカス ───
+
+function MonthlyFocusCard({ data }: { data: MonthlyFocusData }) {
+  if (!data.title) return null
+
+  return (
+    <div className="rounded-xl border-2 border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50 p-5">
+      <div className="flex items-start gap-3">
+        <div className="shrink-0 mt-0.5">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-md">
+            <Focus className="h-5 w-5 text-white" />
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-sm font-bold text-rose-800">
+              {messages.advisory.monthlyFocusTitle}
+            </h3>
+          </div>
+          <p className="text-xs text-rose-600/70 mb-3">
+            {messages.advisory.monthlyFocusDesc}
+          </p>
+
+          <div className="rounded-lg bg-white/60 border border-rose-200 p-4 mb-3">
+            <h4 className="text-base font-bold text-rose-900 mb-1">{data.title}</h4>
+            <p className="text-sm text-rose-700/80 leading-relaxed">{data.reason}</p>
+          </div>
+
+          {data.steps.length > 0 && (
+            <div>
+              <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">
+                {messages.advisory.monthlyFocusStepsLabel}
+              </p>
+              <div className="space-y-2">
+                {data.steps.map((step, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <span className="shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                      {i + 1}
+                    </span>
+                    <p className="text-sm text-rose-800 leading-relaxed">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-4">
+            <CreateActionButton
+              title={data.title}
+              description={`${data.reason}\n\n${data.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}`}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── レポート内容（セクション + アドバイザーコメント統合） ───
+
+function ReportContent({
+  report,
+  clinicStory,
+  hasHighlights,
+  regularSections,
+  collapsedSections,
+  toggleSection,
+}: {
+  report: AdvisoryReportData
+  clinicStory: AdvisorySection | undefined
+  hasHighlights: boolean
+  regularSections: AdvisorySection[]
+  collapsedSections: Set<string>
+  toggleSection: (reportId: string, index: number) => void
+}) {
+  // Parse advisor comments, priority matrix, monthly focus from sections
+  const { advisorCommentMap, priorityMatrixItems, monthlyFocus } = useMemo(() => {
+    const commentMap = new Map<string, AdvisorCommentData[]>()
+    let matrixItems: PriorityMatrixItem[] = []
+    let focus: MonthlyFocusData | null = null
+
+    for (const s of report.sections) {
+      if (s.type === "advisor_comment") {
+        try {
+          const data = JSON.parse(s.content) as AdvisorCommentData
+          const key = s.title // afterSection value
+          const existing = commentMap.get(key) ?? []
+          existing.push(data)
+          commentMap.set(key, existing)
+        } catch { /* ignore malformed */ }
+      } else if (s.type === "priority_matrix") {
+        try {
+          matrixItems = JSON.parse(s.content) as PriorityMatrixItem[]
+        } catch { /* ignore */ }
+      } else if (s.type === "monthly_focus") {
+        try {
+          focus = JSON.parse(s.content) as MonthlyFocusData
+        } catch { /* ignore */ }
+      }
+    }
+
+    return { advisorCommentMap: commentMap, priorityMatrixItems: matrixItems, monthlyFocus: focus }
+  }, [report.sections])
+
+  // Map section types to afterSection keys
+  const sectionKeyMap: Record<string, string> = {
+    clinic_story: "clinicStory",
+    executive_summary: "executiveSummary",
+    root_cause: "rootCauseAnalysis",
+    strategic_actions: "strategicActions",
+  }
+
+  // Render advisor comments for a given afterSection key
+  function renderCommentsAfter(sectionType: string) {
+    const key = sectionKeyMap[sectionType]
+    if (!key) return null
+    const comments = advisorCommentMap.get(key)
+    if (!comments || comments.length === 0) return null
+    return (
+      <>
+        {comments.map((c, i) => (
+          <AdvisorCommentBubble key={`${key}-${i}`} data={c} />
+        ))}
+      </>
+    )
+  }
+
+  return (
+    <CardContent className="pt-0 space-y-4">
+      {/* 今月のフォーカス（最上部に配置） */}
+      {monthlyFocus && <MonthlyFocusCard data={monthlyFocus} />}
+
+      {/* クリニックストーリー */}
+      {clinicStory && (
+        <>
+          <ClinicStoryCard section={clinicStory} />
+          {renderCommentsAfter("clinic_story")}
+        </>
+      )}
+
+      {/* ハイライトカード */}
+      {hasHighlights && <HighlightCards sections={report.sections} />}
+
+      {/* 優先度マトリクス */}
+      {priorityMatrixItems.length > 0 && (
+        <PriorityMatrixCard items={priorityMatrixItems} />
+      )}
+
+      {/* 改善アクション管理へのリンク */}
+      {regularSections.some((s) => s.type === "improvement" || s.type === "strategic_actions") && (
+        <a
+          href="/dashboard/actions"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-purple-50 border border-purple-200 px-3 py-1.5 text-xs font-medium text-purple-700 hover:bg-purple-100 transition-colors"
+        >
+          <Target className="h-3.5 w-3.5" />
+          {messages.advisory.viewActions}
+          <ArrowRight className="h-3 w-3" />
+        </a>
+      )}
+
+      {/* 通常セクション（アドバイザーコメントを合間に挿入） */}
+      <div className="space-y-2">
+        {regularSections.map((section, i) => (
+          <Fragment key={i}>
+            <SectionCard
+              section={section}
+              index={i}
+              isOpen={!collapsedSections.has(`${report.id}:${i}`)}
+              onToggle={() => toggleSection(report.id, i)}
+            />
+            {renderCommentsAfter(section.type)}
+          </Fragment>
+        ))}
+      </div>
+    </CardContent>
+  )
+}
+
 // ─── メインコンポーネント ───
 
 interface AdvisoryReportViewProps {
@@ -833,14 +1193,16 @@ export function AdvisoryReportView({ progress, reports }: AdvisoryReportViewProp
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold">
-            <Brain className="h-5 w-5 text-purple-600" />
-            {messages.advisory.title}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {messages.advisory.subtitle}
-          </p>
+        <div className="flex items-center gap-3">
+          <AdvisorAvatar size="md" />
+          <div>
+            <h1 className="flex items-center gap-2 text-xl font-bold">
+              {messages.advisory.advisorName}
+            </h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {messages.advisory.advisorRole}
+            </p>
+          </div>
         </div>
         <button
           onClick={handleGenerate}
@@ -1035,38 +1397,14 @@ export function AdvisoryReportView({ progress, reports }: AdvisoryReportViewProp
                 </CardHeader>
 
                 {isExpanded && (
-                  <CardContent className="pt-0 space-y-4">
-                    {/* クリニックストーリー */}
-                    {clinicStory && <ClinicStoryCard section={clinicStory} />}
-
-                    {/* ハイライトカード */}
-                    {hasHighlights && <HighlightCards sections={report.sections} />}
-
-                    {/* 改善アクション管理へのリンク */}
-                    {regularSections.some((s) => s.type === "improvement" || s.type === "strategic_actions") && (
-                      <a
-                        href="/dashboard/actions"
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-purple-50 border border-purple-200 px-3 py-1.5 text-xs font-medium text-purple-700 hover:bg-purple-100 transition-colors"
-                      >
-                        <Target className="h-3.5 w-3.5" />
-                        {messages.advisory.viewActions}
-                        <ArrowRight className="h-3 w-3" />
-                      </a>
-                    )}
-
-                    {/* 通常セクション */}
-                    <div className="space-y-2">
-                      {regularSections.map((section, i) => (
-                        <SectionCard
-                          key={i}
-                          section={section}
-                          index={i}
-                          isOpen={!collapsedSections.has(`${report.id}:${i}`)}
-                          onToggle={() => toggleSection(report.id, i)}
-                        />
-                      ))}
-                    </div>
-                  </CardContent>
+                  <ReportContent
+                    report={report}
+                    clinicStory={clinicStory}
+                    hasHighlights={hasHighlights}
+                    regularSections={regularSections}
+                    collapsedSections={collapsedSections}
+                    toggleSection={toggleSection}
+                  />
                 )}
               </Card>
             )

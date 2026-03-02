@@ -8,7 +8,7 @@ import { logger } from "@/lib/logger"
 // トップコンサルタント品質の分析を生成する。
 
 const MODEL = "claude-sonnet-4-6"
-const MAX_TOKENS = 4000
+const MAX_TOKENS = 6000
 const TIMEOUT_MS = 60_000 // 60秒
 const MAX_INPUT_CHARS = 30_000 // 入力テキストの上限（約7,500トークン相当）
 const RATE_LIMIT_MS = 60 * 60 * 1000 // 同一クリニック1時間に1回まで
@@ -54,6 +54,12 @@ interface LLMAdvisoryOutput {
   strategicActions: string
   clinicStory: string
   highlightCards: Array<{ title: string; content: string; emoji: string }>
+  /** アドバイザーの語りかけコメント（セクション間に挿入） */
+  advisorComments: Array<{ afterSection: string; comment: string; tone: "positive" | "concern" | "encouragement" | "insight" }>
+  /** 優先度マトリクス（効果×実行容易さ） */
+  priorityMatrix: Array<{ action: string; impact: "high" | "low"; ease: "high" | "low"; description: string }>
+  /** 今月のフォーカス */
+  monthlyFocus: { title: string; reason: string; steps: string[] }
 }
 
 /** LLM分析の結果（成功 or 失敗理由） */
@@ -62,8 +68,14 @@ export interface LLMAdvisoryResult {
   error: string | null
 }
 
-const SYSTEM_PROMPT = `あなたは歯科医院経営に精通したトップコンサルタントです。
+const SYSTEM_PROMPT = `あなたは「MIERUアドバイザー」— クリニック院長の専属AIコンサルタントです。
 20年以上の歯科コンサルティング経験を持ち、延べ500院以上の改善実績があります。
+
+## あなたのキャラクター
+- 院長と信頼関係のある「かかりつけコンサルタント」として語りかける
+- 「〜ですね！」「ここ、注目です」「これは素晴らしい！」など、人間味のある表現を使う
+- 良い数字にはしっかり褒め、気になる数字にはやんわり指摘する
+- レポートではなく「会話」のトーンで、院長が自然に読み進められるようにする
 
 ## あなたの分析スタイル
 - データの表面的な記述ではなく、**因果関係の推論**と**具体的な打ち手**を示す
@@ -73,21 +85,24 @@ const SYSTEM_PROMPT = `あなたは歯科医院経営に精通したトップコ
 - 改善の優先順位は「患者体験への影響度 × 実行の容易さ」で判断する
 
 ## 出力形式
-JSON形式で以下の5セクションを返してください。マークダウンコードブロックは不要です。
+JSON形式で以下の8セクションを返してください。マークダウンコードブロックは不要です。
 
 {
   "clinicStory": "...",
   "highlightCards": [...],
+  "advisorComments": [...],
   "executiveSummary": "...",
   "rootCauseAnalysis": "...",
-  "strategicActions": "..."
+  "strategicActions": "...",
+  "priorityMatrix": [...],
+  "monthlyFocus": {...}
 }
 
 ### clinicStory（クリニックストーリー）
 - 3文で、院長に語りかけるような温かく親しみのあるトーンで要約する
-- 1文目: 最も印象的な変化や発見を「あなたのクリニックでは〜」で始める
-- 2文目: その背景にある要因（改善アクションの効果やスタッフの努力、患者さんの声）
-- 3文目: 次の一歩への期待感を込めた前向きなメッセージ
+- 1文目: 最も印象的な変化や発見を「先生、」で始め、発見をワクワクするように伝える
+- 2文目: その背景にある要因（改善アクションの効果やスタッフの努力、患者さんの声）を「これは〜のおかげですね」のように褒める
+- 3文目: 次の一歩への期待感を込めた前向きなメッセージ「次は〜に注力すると、さらに良くなりそうです！」
 
 ### highlightCards（発見カード）
 - 2枚のカードを生成する
@@ -96,10 +111,22 @@ JSON形式で以下の5セクションを返してください。マークダウ
 - 2枚目: タイトルは「隠れた強み」。データから読み取れる意外な強みや良い兆候を短く
 - ワクワクするトーンで、数値を1つは含める
 
+### advisorComments（アドバイザーの語りかけ）
+- 分析セクション間に挿入するコメントを3〜4個生成する
+- 各コメントは { "afterSection": "セクション名", "comment": "コメント本文", "tone": "positive|concern|encouragement|insight" }
+- afterSectionの値は以下のいずれか: "clinicStory", "executiveSummary", "rootCauseAnalysis", "strategicActions"
+- コメント例:
+  - positive: 「ここ、すごく良い傾向ですね！スタッフの皆さんの努力が数字に表れています」
+  - concern: 「この数字、ちょっと気になります。でも、原因さえわかれば改善は難しくありません」
+  - encouragement: 「焦らなくて大丈夫です。一つずつ取り組めば、必ず結果はついてきますよ」
+  - insight: 「面白い発見がありました。実はこのデータ、こういう見方もできるんです」
+- 30〜60文字程度の自然な会話調で
+
 ### executiveSummary（エグゼクティブサマリー）
 - 3〜5文で経営者向けの要約を書く
 - 最も重要な発見 → 最大のリスク → 最優先アクションの順
 - 数値を必ず含める
+- 語りかけ調を維持する（「まず注目していただきたいのは〜」「特に〜が気になります」）
 
 ### rootCauseAnalysis（根本原因分析）
 - 表面的な問題から根本原因への因果チェーンを示す
@@ -114,13 +141,45 @@ JSON形式で以下の5セクションを返してください。マークダウ
   具体策: ○○を△△に変更する
   期待効果: スコアが□□pt改善（根拠: 他の分析データから）
   測定方法: 1ヶ月後に○○のスコアを確認
-- 改善アクション管理で追跡可能な粒度で書く`
+- 改善アクション管理で追跡可能な粒度で書く
+
+### priorityMatrix（優先度マトリクス）
+- strategicActionsの各アクションを「効果の大きさ」と「実行の容易さ」の2軸で分類する
+- 3〜5個の配列: { "action": "アクション名（短く）", "impact": "high|low", "ease": "high|low", "description": "1文の説明" }
+- 最低1つは impact=high, ease=high の「すぐやるべき」アクションを含める
+
+### monthlyFocus（今月のフォーカス）
+- 最もインパクトの大きい改善テーマを1つ選ぶ
+- { "title": "テーマ名", "reason": "なぜこれが最優先か（1-2文、語りかけ調）", "steps": ["ステップ1", "ステップ2", "ステップ3"] }
+- stepsは具体的で、来週から始められるレベルの粒度にする`
 
 /** Zod schema for highlight card */
 const highlightCardSchema = z.object({
   title: z.coerce.string().default(""),
   content: z.coerce.string().default(""),
   emoji: z.coerce.string().default(""),
+})
+
+/** Zod schema for advisor comment */
+const advisorCommentSchema = z.object({
+  afterSection: z.coerce.string().default(""),
+  comment: z.coerce.string().default(""),
+  tone: z.enum(["positive", "concern", "encouragement", "insight"]).default("insight"),
+})
+
+/** Zod schema for priority matrix item */
+const priorityMatrixItemSchema = z.object({
+  action: z.coerce.string().default(""),
+  impact: z.enum(["high", "low"]).default("high"),
+  ease: z.enum(["high", "low"]).default("high"),
+  description: z.coerce.string().default(""),
+})
+
+/** Zod schema for monthly focus */
+const monthlyFocusSchema = z.object({
+  title: z.coerce.string().default(""),
+  reason: z.coerce.string().default(""),
+  steps: z.array(z.coerce.string()).default([]),
 })
 
 /** Zod schema for LLM advisory output */
@@ -130,6 +189,9 @@ const llmAdvisoryOutputSchema = z.object({
   strategicActions: z.coerce.string().default(""),
   clinicStory: z.coerce.string().default(""),
   highlightCards: z.array(highlightCardSchema).default([]),
+  advisorComments: z.array(advisorCommentSchema).default([]),
+  priorityMatrix: z.array(priorityMatrixItemSchema).default([]),
+  monthlyFocus: monthlyFocusSchema.default({ title: "", reason: "", steps: [] }),
 })
 
 /**
@@ -329,6 +391,17 @@ export function llmOutputToSections(output: LLMAdvisoryOutput): AdvisorySection[
     })
   }
 
+  // アドバイザーコメント
+  if (output.advisorComments && output.advisorComments.length > 0) {
+    for (const c of output.advisorComments) {
+      sections.push({
+        title: c.afterSection,
+        content: JSON.stringify({ comment: c.comment, tone: c.tone }),
+        type: "advisor_comment",
+      })
+    }
+  }
+
   if (output.executiveSummary) {
     sections.push({
       title: "エグゼクティブサマリー",
@@ -350,6 +423,24 @@ export function llmOutputToSections(output: LLMAdvisoryOutput): AdvisorySection[
       title: "戦略的推奨アクション",
       content: output.strategicActions,
       type: "strategic_actions",
+    })
+  }
+
+  // 優先度マトリクス
+  if (output.priorityMatrix && output.priorityMatrix.length > 0) {
+    sections.push({
+      title: "優先度マトリクス",
+      content: JSON.stringify(output.priorityMatrix),
+      type: "priority_matrix",
+    })
+  }
+
+  // 今月のフォーカス
+  if (output.monthlyFocus && output.monthlyFocus.title) {
+    sections.push({
+      title: "今月のフォーカス",
+      content: JSON.stringify(output.monthlyFocus),
+      type: "monthly_focus",
     })
   }
 

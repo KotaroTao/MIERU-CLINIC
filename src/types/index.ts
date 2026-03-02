@@ -102,6 +102,33 @@ export interface AdvisorySection {
     | "highlight_discovery"
     | "highlight_strength"
     | "clinic_story"
+    | "advisor_comment"
+    | "priority_matrix"
+    | "monthly_focus"
+}
+
+/** アドバイザーコメントのトーン */
+export type AdvisorTone = "positive" | "concern" | "encouragement" | "insight"
+
+/** アドバイザーコメント（パース済み） */
+export interface AdvisorCommentData {
+  comment: string
+  tone: AdvisorTone
+}
+
+/** 優先度マトリクスアイテム */
+export interface PriorityMatrixItem {
+  action: string
+  impact: "high" | "low"
+  ease: "high" | "low"
+  description: string
+}
+
+/** 今月のフォーカス */
+export interface MonthlyFocusData {
+  title: string
+  reason: string
+  steps: string[]
 }
 
 /** AI Advisory レポートデータ */
