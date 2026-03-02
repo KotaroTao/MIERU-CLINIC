@@ -10,6 +10,7 @@ import { StaffEngagement } from "@/components/dashboard/staff-engagement"
 import { ActivationChecklist } from "@/components/dashboard/activation-checklist"
 import { SpecialPlanCard } from "@/components/dashboard/special-plan-card"
 import { pickDashboardMessage } from "@/lib/dynamic-messages"
+import type { StoredComment } from "@/lib/dynamic-messages"
 import { ROLES } from "@/lib/constants"
 import type { ClinicSettings } from "@/types"
 
@@ -42,8 +43,8 @@ export default async function DashboardPage() {
     ? await evaluateSpecialPlanProgress(clinicId, clinicSettings)
     : null
 
-  // Fetch engagement + active improvement actions + advisory progress + report count + staff count
-  const [engagement, activeActions, advisoryProgress, advisoryReportCount, staffCount] = await Promise.all([
+  // Fetch engagement + active improvement actions + advisory progress + report count + staff count + dashboard comments
+  const [engagement, activeActions, advisoryProgress, advisoryReportCount, staffCount, commentsSetting] = await Promise.all([
     getStaffEngagementData(clinicId),
     prisma.improvementAction.findMany({
       where: { clinicId, status: "active" },
@@ -64,6 +65,7 @@ export default async function DashboardPage() {
     getAdvisoryProgress(clinicId),
     prisma.advisoryReport.count({ where: { clinicId } }),
     prisma.staff.count({ where: { clinicId, isActive: true } }),
+    prisma.platformSetting.findUnique({ where: { key: "dashboardComments" } }),
   ])
 
   // Fetch current question scores for active actions
@@ -74,13 +76,17 @@ export default async function DashboardPage() {
     ? await getQuestionCurrentScores(clinicId, questionIds)
     : {}
 
+  const dbComments = commentsSetting
+    ? ((commentsSetting.value as unknown as { comments: StoredComment[] })?.comments ?? null)
+    : null
+
   const dynamicMessage = pickDashboardMessage({
     todayCount: engagement.todayCount,
     dailyGoal: engagement.dailyGoal,
     streak: engagement.streak,
     todayAvgScore: engagement.todayAvgScore,
     totalCount: engagement.totalCount,
-  })
+  }, dbComments)
 
   return (
     <div className="space-y-6">

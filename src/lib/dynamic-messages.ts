@@ -252,6 +252,45 @@ export const DYNAMIC_MESSAGES: DynamicMessage[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// カテゴリ定義（管理画面で使用）
+// ---------------------------------------------------------------------------
+
+export const MESSAGE_CATEGORIES = [
+  { key: "goalAchieved", label: "目標達成", priority: 10 },
+  { key: "almostGoal", label: "あと少しで達成", priority: 8 },
+  { key: "todayZero", label: "今日まだゼロ", priority: 5 },
+  { key: "streak", label: "ストリーク継続中", priority: 3 },
+  { key: "highScore", label: "高スコア維持", priority: 4 },
+  { key: "lowScore", label: "スコアが低め", priority: 6 },
+  { key: "morning", label: "朝の挨拶", priority: 1 },
+  { key: "evening", label: "夕方のねぎらい", priority: 1 },
+  { key: "generic", label: "汎用（教育的コンテンツ）", priority: 0 },
+] as const
+
+export type MessageCategory = (typeof MESSAGE_CATEGORIES)[number]["key"]
+
+/** カテゴリキーに対応する条件関数 */
+const CATEGORY_CONDITIONS: Record<string, (ctx: MessageContext, time: TimeSlot) => boolean> = {
+  goalAchieved: (ctx) => ctx.dailyGoal > 0 && ctx.todayCount >= ctx.dailyGoal,
+  almostGoal: (ctx) => ctx.dailyGoal > 0 && ctx.todayCount > 0 && ctx.dailyGoal - ctx.todayCount <= 3 && ctx.todayCount < ctx.dailyGoal,
+  todayZero: (ctx) => ctx.todayCount === 0 && ctx.totalCount > 0,
+  streak: (ctx) => ctx.streak >= 3,
+  highScore: (ctx) => ctx.todayAvgScore !== null && ctx.todayAvgScore >= 4.5,
+  lowScore: (ctx) => ctx.todayAvgScore !== null && ctx.todayAvgScore < 3.5 && ctx.todayCount >= 3,
+  morning: (_, t) => t === "morning",
+  evening: (_, t) => t === "evening",
+}
+
+// ---------------------------------------------------------------------------
+// DB メッセージ型
+// ---------------------------------------------------------------------------
+
+export type StoredComment = {
+  category: string
+  text: string
+}
+
+// ---------------------------------------------------------------------------
 // メッセージ選択ロジック
 // ---------------------------------------------------------------------------
 
@@ -262,12 +301,20 @@ export const DYNAMIC_MESSAGES: DynamicMessage[] = [
  * - 状況メッセージ: 目標達成・あと少し・スコア低めなど → 日付ベースで固定表示
  * - 教育tips: 毎回ランダムに切り替わり読む楽しみを提供
  * - 状況メッセージがない場合は教育tipsのみ表示
+ *
+ * @param ctx ダッシュボード表示時のコンテキスト
+ * @param dbComments DB保存のカスタムメッセージ（nullならハードコードを使用）
  */
-export function pickDashboardMessage(ctx: MessageContext): string {
+export function pickDashboardMessage(ctx: MessageContext, dbComments?: StoredComment[] | null): string {
   const time = getTimeSlot()
   const today = jstTodayKey()
 
-  // 条件付きメッセージ（状況別）と汎用メッセージ（教育tips）を分離
+  // DB にカスタムメッセージがある場合はそちらを使用
+  if (dbComments && dbComments.length > 0) {
+    return pickFromStoredComments(ctx, time, today, dbComments)
+  }
+
+  // ハードコードのメッセージプールを使用
   const contextual: DynamicMessage[] = []
   const generic: DynamicMessage[] = []
 
@@ -296,6 +343,44 @@ export function pickDashboardMessage(ctx: MessageContext): string {
 
   const index = Math.floor(Math.random() * generic.length)
   return generic[index].text
+}
+
+/** DB保存メッセージからコンテキストに合ったものを選択 */
+function pickFromStoredComments(
+  ctx: MessageContext,
+  time: TimeSlot,
+  today: string,
+  comments: StoredComment[],
+): string {
+  const contextual: Array<{ text: string; priority: number }> = []
+  const generic: string[] = []
+
+  for (const comment of comments) {
+    const condition = CATEGORY_CONDITIONS[comment.category]
+    if (condition) {
+      if (condition(ctx, time)) {
+        const catDef = MESSAGE_CATEGORIES.find((c) => c.key === comment.category)
+        contextual.push({ text: comment.text, priority: catDef?.priority ?? 0 })
+      }
+    } else {
+      // generic category or unknown
+      generic.push(comment.text)
+    }
+  }
+
+  if (contextual.length > 0) {
+    const maxPriority = Math.max(...contextual.map((m) => m.priority))
+    const top = contextual.filter((m) => m.priority === maxPriority)
+    const seed = hashString(`${today}-ctx-${maxPriority}`)
+    return top[Math.abs(seed) % top.length].text
+  }
+
+  if (generic.length === 0) {
+    return "患者さまの「ありがとう」を増やす活動を続けましょう"
+  }
+
+  const index = Math.floor(Math.random() * generic.length)
+  return generic[index]
 }
 
 /** 簡易文字列ハッシュ (djb2) */
