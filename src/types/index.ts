@@ -130,11 +130,17 @@ export interface RecentResponse {
   id: string
   overallScore: number | null
   freeText: string | null
+  patientAttributes?: unknown
   respondedAt: Date | string
   staff: {
     name: string
     role: string
   } | null
+}
+
+/** RecentResponse + テンプレート情報（回答一覧用） */
+export interface SurveyResponseItem extends RecentResponse {
+  template: { name: string }
 }
 
 export interface MonthlyTrend {

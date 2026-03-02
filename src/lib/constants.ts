@@ -316,6 +316,21 @@ export const GENDERS = [
   { value: "unspecified", label: "未回答" },
 ] as const
 
+/** 患者属性の value→label マッピング（レガシー値含む） */
+export const PATIENT_ATTRIBUTE_LABEL_MAP: Record<string, string> = Object.fromEntries([
+  ...VISIT_TYPES.map((v) => [v.value, v.label]),
+  ...INSURANCE_TYPES.map((v) => [v.value, v.label]),
+  ...INSURANCE_PURPOSES.map((v) => [v.value, v.label]),
+  ...SELF_PAY_PURPOSES.map((v) => [v.value, v.label]),
+  // Legacy
+  ...TREATMENT_TYPES.map((v) => [v.value, v.label]),
+  ...AGE_GROUPS.map((v) => [v.value, v.label]),
+  ...GENDERS.map((v) => [v.value, v.label]),
+  // Legacy purpose values not in new constants
+  ["treatment", "治療"], ["checkup", "定期検診"], ["denture", "入れ歯"],
+  ["orthodontics", "矯正"], ["cosmetic", "審美・ホワイトニング"], ["preventive", "検診・クリーニング"],
+])
+
 // Template name → selection mapping
 export const TEMPLATE_SELECTION_MAP: Record<string, { visitType: string }> = {
   "初診": { visitType: "first_visit" },

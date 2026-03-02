@@ -4,42 +4,11 @@ import { useState } from "react"
 import { Star, Trash2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { messages } from "@/lib/messages"
-import {
-  VISIT_TYPES,
-  INSURANCE_TYPES,
-  INSURANCE_PURPOSES,
-  SELF_PAY_PURPOSES,
-  TREATMENT_TYPES,
-  AGE_GROUPS,
-  GENDERS,
-} from "@/lib/constants"
-
-const LABEL_MAP: Record<string, string> = Object.fromEntries([
-  ...VISIT_TYPES.map((v) => [v.value, v.label]),
-  ...INSURANCE_TYPES.map((v) => [v.value, v.label]),
-  ...INSURANCE_PURPOSES.map((v) => [v.value, v.label]),
-  ...SELF_PAY_PURPOSES.map((v) => [v.value, v.label]),
-  // Legacy
-  ...TREATMENT_TYPES.map((v) => [v.value, v.label]),
-  ...AGE_GROUPS.map((v) => [v.value, v.label]),
-  ...GENDERS.map((v) => [v.value, v.label]),
-  // Legacy purpose values not in new constants
-  ["treatment", "治療"], ["checkup", "定期検診"], ["denture", "入れ歯"],
-  ["orthodontics", "矯正"], ["cosmetic", "審美・ホワイトニング"], ["preventive", "検診・クリーニング"],
-])
-
-interface ResponseItem {
-  id: string
-  overallScore: number | null
-  freeText: string | null
-  patientAttributes?: unknown
-  respondedAt: Date | string
-  staff: { name: string; role: string } | null
-  template: { name: string }
-}
+import { PATIENT_ATTRIBUTE_LABEL_MAP } from "@/lib/constants"
+import type { SurveyResponseItem } from "@/types"
 
 interface SurveyResponseListProps {
-  responses: ResponseItem[]
+  responses: SurveyResponseItem[]
   onDelete: (id: string) => void
 }
 
@@ -77,7 +46,7 @@ export function SurveyResponseList({ responses, onDelete }: SurveyResponseListPr
                     if (!val) return null
                     return (
                       <span key={key} className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium">
-                        {LABEL_MAP[val] ?? val}
+                        {PATIENT_ATTRIBUTE_LABEL_MAP[val] ?? val}
                       </span>
                     )
                   })}

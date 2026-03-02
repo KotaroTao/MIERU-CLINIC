@@ -6,19 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { SurveyResponseList } from "@/components/dashboard/survey-response-list"
 import { messages } from "@/lib/messages"
-
-interface ResponseItem {
-  id: string
-  overallScore: number | null
-  freeText: string | null
-  patientAttributes?: unknown
-  respondedAt: Date | string
-  staff: { name: string; role: string } | null
-  template: { name: string }
-}
+import type { SurveyResponseItem } from "@/types"
 
 interface SurveyResponseSectionProps {
-  initialResponses: ResponseItem[]
+  initialResponses: SurveyResponseItem[]
   total: number
   initialPage: number
   limit: number
@@ -30,7 +21,7 @@ export function SurveyResponseSection({
   initialPage,
   limit,
 }: SurveyResponseSectionProps) {
-  const [responses, setResponses] = useState<ResponseItem[]>(initialResponses)
+  const [responses, setResponses] = useState<SurveyResponseItem[]>(initialResponses)
   const [currentTotal, setCurrentTotal] = useState(total)
   const [page, setPage] = useState(initialPage)
   const [loading, setLoading] = useState(false)

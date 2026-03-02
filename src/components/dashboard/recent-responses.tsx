@@ -4,42 +4,12 @@ import { useState, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { messages } from "@/lib/messages"
-import {
-  VISIT_TYPES,
-  INSURANCE_TYPES,
-  INSURANCE_PURPOSES,
-  SELF_PAY_PURPOSES,
-  TREATMENT_TYPES,
-  AGE_GROUPS,
-  GENDERS,
-} from "@/lib/constants"
+import { PATIENT_ATTRIBUTE_LABEL_MAP } from "@/lib/constants"
 import { Star, ChevronDown, Loader2 } from "lucide-react"
-
-const LABEL_MAP: Record<string, string> = Object.fromEntries([
-  ...VISIT_TYPES.map((v) => [v.value, v.label]),
-  ...INSURANCE_TYPES.map((v) => [v.value, v.label]),
-  ...INSURANCE_PURPOSES.map((v) => [v.value, v.label]),
-  ...SELF_PAY_PURPOSES.map((v) => [v.value, v.label]),
-  // Legacy
-  ...TREATMENT_TYPES.map((v) => [v.value, v.label]),
-  ...AGE_GROUPS.map((v) => [v.value, v.label]),
-  ...GENDERS.map((v) => [v.value, v.label]),
-  // Legacy purpose values not in new constants
-  ["treatment", "治療"], ["checkup", "定期検診"], ["denture", "入れ歯"],
-  ["orthodontics", "矯正"], ["cosmetic", "審美・ホワイトニング"], ["preventive", "検診・クリーニング"],
-])
-
-interface ResponseItem {
-  id: string
-  overallScore: number | null
-  freeText: string | null
-  patientAttributes?: unknown
-  respondedAt: Date | string
-  staff: { name: string; role: string } | null
-}
+import type { RecentResponse } from "@/types"
 
 interface RecentResponsesProps {
-  responses: ResponseItem[]
+  responses: RecentResponse[]
   initialHasMore?: boolean
 }
 
@@ -49,7 +19,7 @@ function formatDateTime(date: Date | string): string {
 }
 
 export function RecentResponses({ responses: initialResponses, initialHasMore = true }: RecentResponsesProps) {
-  const [responses, setResponses] = useState<ResponseItem[]>(initialResponses)
+  const [responses, setResponses] = useState<RecentResponse[]>(initialResponses)
   const [hasMore, setHasMore] = useState(initialHasMore)
   const [loading, setLoading] = useState(false)
 
@@ -96,7 +66,7 @@ export function RecentResponses({ responses: initialResponses, initialHasMore = 
                           if (!val) return null
                           return (
                             <span key={key} className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium">
-                              {LABEL_MAP[val] ?? val}
+                              {PATIENT_ATTRIBUTE_LABEL_MAP[val] ?? val}
                             </span>
                           )
                         })}
