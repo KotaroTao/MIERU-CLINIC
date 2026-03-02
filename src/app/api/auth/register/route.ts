@@ -202,17 +202,25 @@ export async function POST(request: NextRequest) {
     return { clinic, user }
   })
 
-  // メール認証メール送信（トランザクション外で非同期実行）
+  // メール認証メール送信（トランザクション外で実行、結果をレスポンスに含める）
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mieru-clinic.com"
   const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}`
   const { subject, html } = buildVerificationEmail(verifyUrl, clinicName.trim())
-  sendMail({ to: email.trim().toLowerCase(), subject, html }).catch((err) => {
+  let emailSent = false
+  try {
+    emailSent = await sendMail({ to: email.trim().toLowerCase(), subject, html })
+  } catch (err) {
     logger.error("Failed to send verification email", { component: "register", error: String(err) })
-  })
+  }
+
+  if (!emailSent) {
+    logger.error("Verification email was not sent", { component: "register", email: email.trim().toLowerCase() })
+  }
 
   return successResponse({
     id: result.clinic.id,
     slug: result.clinic.slug,
     email: result.user.email,
+    emailSent,
   }, 201)
 }

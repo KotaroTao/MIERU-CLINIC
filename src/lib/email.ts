@@ -46,9 +46,13 @@ export async function sendMail({ to, subject, html }: SendMailOptions): Promise<
     }
   }
 
-  // フォールバック: コンソールにログ出力（開発用）
-  logger.info("Mail sent (dev fallback)", { component: "sendMail", to, subject })
-  return true
+  // SMTP未設定: 開発環境ではログ出力、本番では警告
+  if (process.env.NODE_ENV === "production") {
+    logger.error("SMTP_HOST is not configured — email not sent", { component: "sendMail", to, subject })
+  } else {
+    logger.info("Mail sent (dev fallback — SMTP_HOST not set)", { component: "sendMail", to, subject })
+  }
+  return false
 }
 
 /** 安全なランダムトークンを生成（タイムスタンプ付きで有効期限判定に使用） */

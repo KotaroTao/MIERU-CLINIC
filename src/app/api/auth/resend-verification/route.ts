@@ -44,7 +44,11 @@ export async function POST(_request: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mieru-clinic.com"
   const verifyUrl = `${appUrl}/verify-email?token=${token}`
   const { subject, html } = buildVerificationEmail(verifyUrl, user.clinic?.name || user.name)
-  await sendMail({ to: user.email, subject, html })
+  const emailSent = await sendMail({ to: user.email, subject, html })
+
+  if (!emailSent) {
+    return errorResponse(messages.auth.verifyEmailResendFailed, 500)
+  }
 
   return successResponse({ sent: true })
 }
