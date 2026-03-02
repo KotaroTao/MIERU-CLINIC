@@ -31,9 +31,10 @@ export function SurveyResponseSection({
   limit,
 }: SurveyResponseSectionProps) {
   const [responses, setResponses] = useState<ResponseItem[]>(initialResponses)
+  const [currentTotal, setCurrentTotal] = useState(total)
   const [page, setPage] = useState(initialPage)
   const [loading, setLoading] = useState(false)
-  const hasMore = responses.length < total
+  const hasMore = responses.length < currentTotal
 
   const loadMore = useCallback(async () => {
     setLoading(true)
@@ -50,13 +51,18 @@ export function SurveyResponseSection({
     }
   }, [page, limit])
 
+  const handleDelete = useCallback((id: string) => {
+    setResponses((prev) => prev.filter((r) => r.id !== id))
+    setCurrentTotal((prev) => prev - 1)
+  }, [])
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">
           {messages.nav.surveys}
           <span className="ml-2 text-sm font-normal text-muted-foreground">
-            {total}{messages.common.countSuffix}
+            {currentTotal}{messages.common.countSuffix}
           </span>
         </CardTitle>
       </CardHeader>
@@ -66,7 +72,7 @@ export function SurveyResponseSection({
             {messages.common.noData}
           </p>
         ) : (
-          <SurveyResponseList responses={responses} />
+          <SurveyResponseList responses={responses} onDelete={handleDelete} />
         )}
 
         {hasMore && (
@@ -83,7 +89,7 @@ export function SurveyResponseSection({
                   {messages.common.loading}
                 </>
               ) : (
-                `もっと表示（残り${total - responses.length}件）`
+                `もっと表示（残り${currentTotal - responses.length}件）`
               )}
             </Button>
           </div>
