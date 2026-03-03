@@ -91,7 +91,8 @@ export const messages = {
     verifyEmailBanner: "メールアドレスが未確認です。メールに記載のリンクから確認を完了してください。",
     verifyEmailResendLink: "確認メールを再送信する",
     checkSpamFolder: "届かない場合は迷惑メールフォルダもご確認ください",
-    verifyEmailSendFailed: "確認メールの送信に失敗しました。ログイン後に再送信できます。",
+    verifyEmailSendFailed: "確認メールの送信に失敗しました",
+    verifyEmailSendFailedDesc: "アカウントは作成されました。ログイン後に確認メールを再送信できます。",
     verifyEmailResendFailed: "メールの送信に失敗しました。時間をおいて再度お試しください。",
     goToDashboard: "ダッシュボードへ",
     verifyEmailPendingTitle: "メール認証が必要です",
@@ -825,6 +826,14 @@ export const messages = {
     // スタッフ向けガイド
     guideUrlTitle: "スタッフ向け使い方ガイド",
     guideUrlDesc: "医院スタッフ向けの操作マニュアル（認証不要で閲覧可能）",
+    // メールアドレス管理
+    emailManagement: "メールアドレス管理",
+    emailNotSet: "メール未設定",
+    emailChangeSuccess: "メールアドレスを変更しました",
+    emailChangeTitle: "メールアドレスを変更",
+    noAdminUsers: "管理者ユーザーがいません",
+    inactive: "無効",
+    fetchError: "データの取得に失敗しました",
   },
   operatorMode: {
     banner: "運営モード",

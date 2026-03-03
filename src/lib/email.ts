@@ -2,13 +2,15 @@ import crypto from "crypto"
 import { logger } from "@/lib/logger"
 
 /**
- * メール送信ユーティリティ
+ * メール送信ユーティリティ（Resend API）
  *
- * 環境変数 SMTP_HOST が設定されている場合は nodemailer で実際に送信。
+ * 環境変数 SMTP_HOST が設定されている場合は Resend API で送信。
  * 未設定の場合はコンソールにログ出力（開発用フォールバック）。
  *
  * 必要な環境変数（本番用）:
- *   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
+ *   SMTP_HOST: Resend API エンドポイント（https://api.resend.com/emails）
+ *   SMTP_PASS: Resend API キー（re_xxxxxxxx）
+ *   SMTP_FROM: 送信元アドレス（例: MIERU Clinic <register@mieru-clinic.com>）
  */
 
 interface SendMailOptions {
@@ -22,10 +24,8 @@ export async function sendMail({ to, subject, html }: SendMailOptions): Promise<
 
   if (smtpHost) {
     try {
-      // fetch ベースのメール送信（外部メールAPIを使用）
-      // SMTP_HOST を API endpoint として使用（例: https://api.resend.com/emails）
       const apiKey = process.env.SMTP_PASS || ""
-      const fromAddress = process.env.SMTP_FROM || "noreply@mieru-clinic.com"
+      const fromAddress = process.env.SMTP_FROM || "MIERU Clinic <register@mieru-clinic.com>"
       const res = await fetch(smtpHost, {
         method: "POST",
         headers: {
