@@ -1439,6 +1439,7 @@ export const messages = {
     contactSales: "お問い合わせ",
     freePlanDesc: "無料プランに変更する場合は、現在のサブスクリプションを解約してください。",
     adminOverride: "※ 運営管理者によるプラン設定のため、課金情報はありません",
+    comingSoon: "準備中",
   },
   errorPage: {
     title: "エラーが発生しました",

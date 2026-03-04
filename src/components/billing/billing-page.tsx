@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { messages } from "@/lib/messages"
 import { PLANS, PLAN_ORDER } from "@/lib/constants"
 import { YEARLY_BILLING_MONTHS } from "@/lib/stripe"
+import type { AvailablePrice } from "@/lib/stripe"
 import type { PlanInfo, PlanTier } from "@/types"
 
 const YEARLY_DISCOUNT_PERCENT = Math.round((1 - YEARLY_BILLING_MONTHS / 12) * 100)
@@ -28,6 +29,7 @@ interface BillingPageProps {
   hasSubscription: boolean
   billingEvents: BillingEvent[]
   isOperatorMode: boolean
+  availablePrices: AvailablePrice[]
 }
 
 export function BillingPage({
@@ -38,6 +40,7 @@ export function BillingPage({
   hasSubscription,
   billingEvents,
   isOperatorMode,
+  availablePrices,
 }: BillingPageProps) {
   const searchParams = useSearchParams()
   const checkoutSuccess = searchParams.get("success") === "1"
@@ -84,6 +87,7 @@ export function BillingPage({
       <PlanSelector
         planInfo={planInfo}
         hasSubscription={hasSubscription}
+        availablePrices={availablePrices}
       />
 
       {/* お支払い情報管理 */}
@@ -196,13 +200,20 @@ function StatusBadge({ status, isTrialing }: { status: string | null; isTrialing
 function PlanSelector({
   planInfo,
   hasSubscription,
+  availablePrices,
 }: {
   planInfo: PlanInfo
   hasSubscription: boolean
+  availablePrices: AvailablePrice[]
 }) {
+  const hasYearly = availablePrices.some((p) => p.cycle === "yearly")
   const [selectedCycle, setSelectedCycle] = useState<"monthly" | "yearly">("monthly")
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  function isPriceAvailable(plan: PlanTier, cycle: "monthly" | "yearly"): boolean {
+    return availablePrices.some((p) => p.plan === plan && p.cycle === cycle)
+  }
 
   async function handleSubscribe(plan: PlanTier) {
     setLoading(plan)
@@ -244,14 +255,21 @@ function PlanSelector({
           </button>
           <button
             onClick={() => setSelectedCycle("yearly")}
+            disabled={!hasYearly}
             className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-              selectedCycle === "yearly"
-                ? "bg-background shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+              !hasYearly
+                ? "cursor-not-allowed text-muted-foreground/50"
+                : selectedCycle === "yearly"
+                  ? "bg-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {messages.billing.yearlyShort}
-            <span className="ml-1 text-xs text-emerald-600">-{YEARLY_DISCOUNT_PERCENT}%</span>
+            {hasYearly ? (
+              <span className="ml-1 text-xs text-emerald-600">-{YEARLY_DISCOUNT_PERCENT}%</span>
+            ) : (
+              <span className="ml-1 text-xs text-muted-foreground">{messages.billing.comingSoon}</span>
+            )}
           </button>
         </div>
       </div>
@@ -320,17 +338,23 @@ function PlanSelector({
                     <a href="/#cta">{messages.billing.contactSales}</a>
                   </Button>
                 ) : plan.price > 0 ? (
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    onClick={() => handleSubscribe(tier)}
-                    disabled={loading !== null}
-                  >
-                    {loading === tier ? (
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    ) : null}
-                    {loading === tier ? messages.billing.subscribing : messages.billing.subscribe}
-                  </Button>
+                  isPriceAvailable(tier, selectedCycle) ? (
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleSubscribe(tier)}
+                      disabled={loading !== null}
+                    >
+                      {loading === tier ? (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      ) : null}
+                      {loading === tier ? messages.billing.subscribing : messages.billing.subscribe}
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" className="w-full" disabled>
+                      {messages.billing.comingSoon}
+                    </Button>
+                  )
                 ) : (
                   <div className="text-center text-xs text-muted-foreground">
                     {hasSubscription

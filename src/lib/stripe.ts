@@ -1,7 +1,7 @@
 import Stripe from "stripe"
 import type { PlanTier, ClinicSettings } from "@/types"
 import { logger } from "@/lib/logger"
-import { PLANS, ALL_PLAN_TIERS } from "@/lib/constants"
+import { PLANS, ALL_PLAN_TIERS, PLAN_ORDER } from "@/lib/constants"
 import { updateClinicSettings } from "@/lib/queries/clinics"
 import { prisma } from "@/lib/prisma"
 import type { Prisma } from "@prisma/client"
@@ -65,6 +65,26 @@ export function getStripePriceId(
 /** 有料プランかどうか */
 export function isPaidPlan(plan: PlanTier): boolean {
   return PLANS[plan].price > 0
+}
+
+/** Stripe Price の利用可否を表す型 */
+export interface AvailablePrice {
+  plan: PlanTier
+  cycle: "monthly" | "yearly"
+}
+
+/** 設定済みのPrice IDがあるプラン+サイクルの組み合わせを返す */
+export function getAvailablePrices(): AvailablePrice[] {
+  const result: AvailablePrice[] = []
+  for (const plan of PLAN_ORDER) {
+    if (!isPaidPlan(plan)) continue
+    for (const cycle of ["monthly", "yearly"] as const) {
+      if (getStripePriceId(plan, cycle)) {
+        result.push({ plan, cycle })
+      }
+    }
+  }
+  return result
 }
 
 // ─── Stripe Customer ───
