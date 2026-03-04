@@ -923,19 +923,17 @@ export default function HomePage() {
             <p className="mx-auto mb-14 max-w-lg text-center text-sm text-muted-foreground animate-on-scroll">
               {messages.landing.pricingSubtitle}
             </p>
-            <div className="mx-auto grid max-w-6xl gap-5 sm:grid-cols-2 lg:grid-cols-4 animate-on-scroll">
+            <div className="mx-auto grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3 animate-on-scroll">
               {PLAN_ORDER.map((tier) => {
                 const plan = PLANS[tier]
                 const isHighlighted = plan.highlighted
                 const ctaLabels: Record<string, string> = {
                   free: messages.landing.pricingFreeCta,
-                  starter: messages.landing.pricingStarterCta,
                   standard: messages.landing.pricingStandardCta,
                   enterprise: messages.landing.pricingEnterpriseCta,
                 }
                 const ctaHrefs: Record<string, string> = {
                   free: "/register",
-                  starter: "/register",
                   standard: "/register",
                   enterprise: "#cta",
                 }

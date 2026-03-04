@@ -41,7 +41,7 @@ interface NavItem {
 }
 
 function planLevel(plan: PlanTier): number {
-  const order: PlanTier[] = ["free", "starter", "standard", "enterprise"]
+  const order: PlanTier[] = ["free", "standard", "enterprise"]
   // special / demo は standard と同等の機能レベル
   if (plan === "special" || plan === "demo") {
     return order.indexOf("standard")
@@ -66,7 +66,6 @@ const adminNavItems: NavItem[] = [
 
 const PLAN_BADGE_STYLES: Record<PlanTier, string> = {
   free: "bg-slate-100 text-slate-700",
-  starter: "bg-blue-100 text-blue-700",
   standard: "bg-primary/10 text-primary",
   enterprise: "bg-amber-100 text-amber-700",
   demo: "bg-pink-100 text-pink-700",

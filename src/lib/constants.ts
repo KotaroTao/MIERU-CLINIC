@@ -6,10 +6,10 @@ export const APP_DESCRIPTION = "患者体験の見える化"
 // ─── 料金プラン定義 ───
 
 /** LP表示用（demoは含まない） */
-export const PLAN_ORDER: PlanTier[] = ["free", "starter", "standard", "enterprise"]
+export const PLAN_ORDER: PlanTier[] = ["free", "standard", "enterprise"]
 
 /** 管理画面用（全プラン） */
-export const ALL_PLAN_TIERS: PlanTier[] = ["free", "starter", "standard", "enterprise", "demo", "special"]
+export const ALL_PLAN_TIERS: PlanTier[] = ["free", "standard", "enterprise", "demo", "special"]
 
 export interface PlanDefinition {
   tier: PlanTier
@@ -42,25 +42,6 @@ export const PLANS: Record<PlanTier, PlanDefinition> = {
       "基本ダッシュボード",
       "ゲーミフィケーション",
       "データ保持3ヶ月",
-    ],
-  },
-  starter: {
-    tier: "starter",
-    name: "スターター",
-    price: 9800,
-    priceLabel: "¥9,800",
-    priceNote: "/月（税抜）",
-    description: "アンケートを本格運用したい医院向け",
-    monthlyResponseLimit: 300,
-    staffLimit: 3,
-    dataRetentionMonths: 12,
-    features: [
-      "アンケート月300件まで",
-      "スタッフ3名まで",
-      "日次トレンド分析",
-      "質問別スコア分析",
-      "アンケート一覧",
-      "データ保持12ヶ月",
     ],
   },
   standard: {
@@ -151,8 +132,8 @@ export const FEATURE_REQUIREMENTS: Record<string, PlanTier> = {
   advisory: "standard",
   improvement_actions: "standard",
   business_metrics: "standard",
-  surveys_list: "starter",
-  staff_management: "starter",
+  surveys_list: "free",
+  staff_management: "free",
   patient_filters_full: "standard",
   line_integration: "standard",
   multi_clinic: "enterprise",

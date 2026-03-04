@@ -75,8 +75,8 @@ export function getNextPlan(currentPlan: PlanTier): PlanTier | null {
 export function getTrialTargetPlan(settings: ClinicSettings): PlanTier | null {
   if (!canStartTrial(settings)) return null
   const basePlan = getClinicPlan(settings)
-  // free/starter → standard をトライアル
-  if (basePlan === "free" || basePlan === "starter") return "standard"
+  // free → standard をトライアル
+  if (basePlan === "free") return "standard"
   return getNextPlan(basePlan)
 }
 

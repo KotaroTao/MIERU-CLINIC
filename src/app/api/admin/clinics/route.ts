@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     return errorResponse(messages.auth.emailAlreadyUsed, 400)
   }
 
-  const validPlans = ["free", "starter", "standard", "enterprise"]
+  const validPlans = ["free", "standard", "enterprise"]
   const selectedPlan = plan && validPlans.includes(plan) ? plan : "free"
 
   // トランザクションで Clinic + User + SurveyTemplate を一括作成
