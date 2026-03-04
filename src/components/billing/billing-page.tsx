@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { messages } from "@/lib/messages"
 import { PLANS, PLAN_ORDER } from "@/lib/constants"
 import { YEARLY_BILLING_MONTHS } from "@/lib/stripe"
+import type { AvailablePrice } from "@/lib/stripe"
 import type { PlanInfo, PlanTier } from "@/types"
 
 const YEARLY_DISCOUNT_PERCENT = Math.round((1 - YEARLY_BILLING_MONTHS / 12) * 100)
@@ -18,11 +19,6 @@ interface BillingEvent {
   amount: number | null
   currency: string | null
   createdAt: string
-}
-
-interface AvailablePrice {
-  plan: PlanTier
-  cycle: "monthly" | "yearly"
 }
 
 interface BillingPageProps {
@@ -258,7 +254,7 @@ function PlanSelector({
             {messages.billing.monthlyShort}
           </button>
           <button
-            onClick={() => hasYearly && setSelectedCycle("yearly")}
+            onClick={() => setSelectedCycle("yearly")}
             disabled={!hasYearly}
             className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
               !hasYearly
