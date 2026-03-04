@@ -46,6 +46,20 @@ export default async function SettingsPage() {
       <div className="rounded-lg border bg-card p-4">
         <div className="flex items-center justify-between">
           <div>
+            <h3 className="text-sm font-medium">{messages.billing.title}</h3>
+            <p className="text-xs text-muted-foreground">{messages.billing.subtitle}</p>
+          </div>
+          <Link
+            href="/dashboard/settings/billing"
+            className="rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
+          >
+            {messages.billing.managePayment}
+          </Link>
+        </div>
+      </div>
+      <div className="rounded-lg border bg-card p-4">
+        <div className="flex items-center justify-between">
+          <div>
             <h3 className="text-sm font-medium">{messages.nav.testSurvey}</h3>
             <p className="text-xs text-muted-foreground">{messages.settings.testSurveyDesc}</p>
           </div>
