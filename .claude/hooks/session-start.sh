@@ -73,6 +73,38 @@ SUMMARY_FILE="$CLAUDE_PROJECT_DIR/.claude/dev-context.md"
   fi
   echo ""
 
+  # --- コード品質サマリー ---
+  echo "## コード品質"
+
+  # TypeScriptエラー数
+  TS_ERRORS=$(npx tsc --noEmit 2>&1 | grep -c "error TS" || true)
+  if [ "$TS_ERRORS" -gt 0 ] 2>/dev/null; then
+    echo "- TypeScript: **${TS_ERRORS}件のエラー** (要修正)"
+  else
+    echo "- TypeScript: エラーなし"
+  fi
+
+  # ESLint警告/エラー数
+  LINT_OUTPUT=$(npx next lint 2>&1 || true)
+  LINT_ERRORS=$(echo "$LINT_OUTPUT" | grep -c "Error:" || true)
+  LINT_WARNINGS=$(echo "$LINT_OUTPUT" | grep -c "Warning:" || true)
+  if [ "$LINT_ERRORS" -gt 0 ] 2>/dev/null; then
+    echo "- ESLint: **${LINT_ERRORS}件のエラー**, ${LINT_WARNINGS}件の警告"
+  elif [ "$LINT_WARNINGS" -gt 0 ] 2>/dev/null; then
+    echo "- ESLint: ${LINT_WARNINGS}件の警告"
+  else
+    echo "- ESLint: 問題なし"
+  fi
+
+  # Prismaクライアント状態
+  if [ -d "node_modules/.prisma/client" ]; then
+    PRISMA_GENERATED=$(date -r "node_modules/.prisma/client" '+%Y-%m-%d %H:%M' 2>/dev/null || echo "不明")
+    echo "- Prisma Client: 生成済み (${PRISMA_GENERATED})"
+  else
+    echo "- Prisma Client: **未生成** (npx prisma generate を実行してください)"
+  fi
+  echo ""
+
   # --- 直近のコミット履歴（10件）---
   echo "## 直近コミット（10件）"
   echo '```'

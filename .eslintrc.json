@@ -1,3 +1,27 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "no-unused-vars": ["warn", {
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_",
+      "caughtErrorsIgnorePattern": "^_"
+    }],
+    "import/no-duplicates": "warn",
+    "no-console": ["warn", {
+      "allow": ["warn", "error", "info", "log"]
+    }],
+    "prefer-const": "warn",
+    "no-var": "error",
+    "eqeqeq": ["error", "always", {
+      "null": "ignore"
+    }]
+  },
+  "overrides": [
+    {
+      "files": ["src/types/**/*.d.ts"],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    }
+  ]
 }
