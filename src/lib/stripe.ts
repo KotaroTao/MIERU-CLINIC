@@ -1,11 +1,29 @@
 import Stripe from "stripe"
 import type { PlanTier, ClinicSettings } from "@/types"
-import type { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
 import { logger } from "@/lib/logger"
-import { PLANS } from "@/lib/constants"
+import { PLANS, ALL_PLAN_TIERS } from "@/lib/constants"
+import { updateClinicSettings } from "@/lib/queries/clinics"
+import { prisma } from "@/lib/prisma"
+import type { Prisma } from "@prisma/client"
 
-// ─── Stripe Client ───
+// ─── Billing Event Types ───
+
+export const BILLING_EVENT_TYPES = {
+  CHECKOUT_COMPLETED: "checkout_completed",
+  PAYMENT_SUCCEEDED: "payment_succeeded",
+  PAYMENT_FAILED: "payment_failed",
+  SUBSCRIPTION_UPDATED: "subscription_updated",
+  SUBSCRIPTION_DELETED: "subscription_deleted",
+} as const
+
+export type BillingEventType = typeof BILLING_EVENT_TYPES[keyof typeof BILLING_EVENT_TYPES]
+
+// ─── Yearly Pricing ───
+
+/** 年払い月数（12ヶ月中10ヶ月分 = 2ヶ月分お得） */
+export const YEARLY_BILLING_MONTHS = 10
+
+// ─── Stripe Client (internal) ───
 
 function getStripeClient(): Stripe {
   const key = process.env.STRIPE_SECRET_KEY
@@ -17,11 +35,16 @@ function getStripeClient(): Stripe {
 
 let _stripe: Stripe | null = null
 
-export function stripe(): Stripe {
+function getStripe(): Stripe {
   if (!_stripe) {
     _stripe = getStripeClient()
   }
   return _stripe
+}
+
+/** Stripe が設定済みかどうか（UI表示の制御用） */
+export function isStripeConfigured(): boolean {
+  return !!process.env.STRIPE_SECRET_KEY
 }
 
 // ─── Price ID Mapping ───
@@ -46,17 +69,18 @@ export function isPaidPlan(plan: PlanTier): boolean {
 
 // ─── Stripe Customer ───
 
-/** Stripe Customer を取得 or 作成してIDを返す */
+/** Stripe Customer を取得 or 作成してIDを返す（SELECT FOR UPDATE で排他制御） */
 export async function getOrCreateStripeCustomer(
   clinicId: string,
   email: string,
   clinicName: string
 ): Promise<string> {
-  const clinic = await prisma.clinic.findUnique({
-    where: { id: clinicId },
-    select: { settings: true },
-  })
-  const settings = (clinic?.settings ?? {}) as ClinicSettings
+  // SELECT FOR UPDATE で排他制御し、同時リクエストでの二重作成を防止
+  interface LockedRow { settings: Prisma.JsonValue }
+  const rows = await prisma.$queryRaw<LockedRow[]>`
+    SELECT settings FROM clinics WHERE id = ${clinicId}::uuid FOR UPDATE
+  `
+  const settings = (rows[0]?.settings ?? {}) as ClinicSettings
 
   // 既存のCustomer IDがあればそのまま返す
   if (settings.stripeCustomerId) {
@@ -64,20 +88,14 @@ export async function getOrCreateStripeCustomer(
   }
 
   // Stripe Customer を作成
-  const customer = await stripe().customers.create({
+  const customer = await getStripe().customers.create({
     email,
     name: clinicName,
-    metadata: {
-      clinicId,
-    },
+    metadata: { clinicId },
   })
 
   // settings に保存
-  const merged = { ...settings, stripeCustomerId: customer.id }
-  await prisma.clinic.update({
-    where: { id: clinicId },
-    data: { settings: merged as unknown as Prisma.InputJsonValue },
-  })
+  await updateClinicSettings(clinicId, { stripeCustomerId: customer.id })
 
   logger.info("Stripe customer created", {
     component: "stripe",
@@ -103,7 +121,7 @@ export async function createCheckoutSession(params: {
     throw new Error(`Stripe Price ID not configured for ${params.plan}/${params.cycle}`)
   }
 
-  return stripe().checkout.sessions.create({
+  return getStripe().checkout.sessions.create({
     customer: params.customerId,
     mode: "subscription",
     payment_method_types: ["card"],
@@ -139,7 +157,7 @@ export async function createBillingPortalSession(
   customerId: string,
   returnUrl: string
 ): Promise<Stripe.BillingPortal.Session> {
-  return stripe().billingPortal.sessions.create({
+  return getStripe().billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
     locale: "ja",
@@ -156,13 +174,20 @@ export function constructWebhookEvent(
   if (!webhookSecret) {
     throw new Error("STRIPE_WEBHOOK_SECRET is not configured")
   }
-  return stripe().webhooks.constructEvent(body, signature, webhookSecret)
+  return getStripe().webhooks.constructEvent(body, signature, webhookSecret)
 }
 
 // ─── Subscription Helpers ───
 
+/** Stripe Subscription を ID で取得 */
+export async function retrieveSubscription(
+  subscriptionId: string
+): Promise<Stripe.Subscription> {
+  return getStripe().subscriptions.retrieve(subscriptionId)
+}
+
 /** Stripe Subscription Status → billingStatus マッピング */
-export function mapSubscriptionStatus(
+function mapSubscriptionStatus(
   status: Stripe.Subscription.Status
 ): ClinicSettings["billingStatus"] {
   switch (status) {
@@ -181,6 +206,14 @@ export function mapSubscriptionStatus(
     default:
       return "canceled"
   }
+}
+
+/** metadata.plan の安全なバリデーション */
+function validatePlanFromMetadata(value: string | undefined, fallback: PlanTier): PlanTier {
+  if (value && ALL_PLAN_TIERS.includes(value as PlanTier)) {
+    return value as PlanTier
+  }
+  return fallback
 }
 
 /** clinicId からサブスクリプションの metadata.plan を取得して settings を更新 */
@@ -210,8 +243,8 @@ export async function syncSubscriptionToClinic(
   }
 
   const settings = (clinic.settings ?? {}) as ClinicSettings
-  const plan = (subscription.metadata.plan as PlanTier) || settings.plan
-  const cycle = (subscription.metadata.cycle as "monthly" | "yearly") || settings.billingCycle
+  const plan = validatePlanFromMetadata(subscription.metadata.plan, settings.plan ?? "free")
+  const cycle = (subscription.metadata.cycle === "yearly" ? "yearly" : "monthly") as "monthly" | "yearly"
   const billingStatus = mapSubscriptionStatus(subscription.status)
 
   const patch: Partial<ClinicSettings> = {
@@ -230,11 +263,7 @@ export async function syncSubscriptionToClinic(
     patch.plan = "free"
   }
 
-  const merged = { ...settings, ...patch }
-  await prisma.clinic.update({
-    where: { id: clinicId },
-    data: { settings: merged as unknown as Prisma.InputJsonValue },
-  })
+  await updateClinicSettings(clinicId, patch)
 
   logger.info("Subscription synced to clinic", {
     component: "stripe",
@@ -248,7 +277,7 @@ export async function syncSubscriptionToClinic(
 /** BillingEvent を冪等に記録 */
 export async function recordBillingEvent(params: {
   clinicId: string
-  type: string
+  type: BillingEventType
   stripeEventId: string
   amount?: number
   currency?: string

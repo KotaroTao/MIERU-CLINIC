@@ -7,7 +7,10 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { messages } from "@/lib/messages"
 import { PLANS, PLAN_ORDER } from "@/lib/constants"
+import { YEARLY_BILLING_MONTHS } from "@/lib/stripe"
 import type { PlanInfo, PlanTier } from "@/types"
+
+const YEARLY_DISCOUNT_PERCENT = Math.round((1 - YEARLY_BILLING_MONTHS / 12) * 100)
 
 interface BillingEvent {
   id: string
@@ -248,7 +251,7 @@ function PlanSelector({
             }`}
           >
             {messages.billing.yearlyShort}
-            <span className="ml-1 text-xs text-emerald-600">-17%</span>
+            <span className="ml-1 text-xs text-emerald-600">-{YEARLY_DISCOUNT_PERCENT}%</span>
           </button>
         </div>
       </div>
@@ -258,7 +261,7 @@ function PlanSelector({
           const plan = PLANS[tier]
           const isCurrent = planInfo.effectivePlan === tier
           const isEnterprise = tier === "enterprise"
-          const yearlyPrice = plan.price > 0 ? plan.price * 10 : 0
+          const yearlyPrice = plan.price > 0 ? plan.price * YEARLY_BILLING_MONTHS : 0
           const displayPrice = selectedCycle === "yearly" && plan.price > 0
             ? `¥${yearlyPrice.toLocaleString()}`
             : plan.priceLabel
@@ -352,9 +355,11 @@ function PlanSelector({
 
 function PaymentManagementCard() {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleOpenPortal() {
     setLoading(true)
+    setError(null)
     try {
       const res = await fetch("/api/billing/portal", {
         method: "POST",
@@ -362,9 +367,11 @@ function PaymentManagementCard() {
       const data = await res.json()
       if (res.ok && data.url) {
         window.location.href = data.url
+      } else {
+        setError(data.error || messages.common.error)
       }
     } catch {
-      // Portal open failed silently
+      setError(messages.common.error)
     } finally {
       setLoading(false)
     }
@@ -393,6 +400,9 @@ function PaymentManagementCard() {
           {messages.billing.openPortal}
         </Button>
       </div>
+      {error && (
+        <p className="mt-3 text-sm text-red-600">{error}</p>
+      )}
     </div>
   )
 }

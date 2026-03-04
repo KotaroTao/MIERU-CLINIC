@@ -13,7 +13,7 @@ const nextConfig = {
       "frame-src https://challenges.cloudflare.com https://js.stripe.com https://hooks.stripe.com",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
+      "form-action 'self' https://checkout.stripe.com",
       "frame-ancestors 'none'",
     ].join("; ")
 
