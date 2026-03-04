@@ -2,6 +2,7 @@ import { NextRequest } from "next/server"
 import { requireRole, isAuthError } from "@/lib/auth-helpers"
 import { successResponse, errorResponse } from "@/lib/api-helpers"
 import { messages } from "@/lib/messages"
+import { PLAN_ORDER } from "@/lib/constants"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
@@ -70,8 +71,7 @@ export async function POST(request: NextRequest) {
     return errorResponse(messages.auth.emailAlreadyUsed, 400)
   }
 
-  const validPlans = ["free", "standard", "enterprise"]
-  const selectedPlan = plan && validPlans.includes(plan) ? plan : "free"
+  const selectedPlan = plan && (PLAN_ORDER as readonly string[]).includes(plan) ? plan : "free"
 
   // トランザクションで Clinic + User + SurveyTemplate を一括作成
   const result = await prisma.$transaction(async (tx) => {

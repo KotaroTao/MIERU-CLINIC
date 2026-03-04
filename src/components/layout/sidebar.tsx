@@ -22,7 +22,7 @@ import {
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { messages } from "@/lib/messages"
-import { APP_NAME, PLANS, FEATURE_REQUIREMENTS } from "@/lib/constants"
+import { APP_NAME, PLANS, PLAN_ORDER, FEATURE_REQUIREMENTS } from "@/lib/constants"
 import type { PlanInfo, PlanTier } from "@/types"
 
 interface SidebarProps {
@@ -41,12 +41,11 @@ interface NavItem {
 }
 
 function planLevel(plan: PlanTier): number {
-  const order: PlanTier[] = ["free", "standard", "enterprise"]
   // special / demo は standard と同等の機能レベル
   if (plan === "special" || plan === "demo") {
-    return order.indexOf("standard")
+    return PLAN_ORDER.indexOf("standard")
   }
-  return order.indexOf(plan)
+  return PLAN_ORDER.indexOf(plan)
 }
 
 function hasFeatureAccess(effectivePlan: PlanTier, feature: string): boolean {
