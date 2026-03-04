@@ -5,7 +5,7 @@ import { checkRateLimit } from "@/lib/rate-limit"
 import { getClientIp } from "@/lib/ip"
 import { logger } from "@/lib/logger"
 import { verifyTurnstileToken } from "@/lib/turnstile"
-import { sendMail, generateVerificationToken, buildVerificationEmail } from "@/lib/email"
+import { sendMail, generateVerificationToken, buildVerificationEmail, getEmailTemplates } from "@/lib/email"
 import { messages } from "@/lib/messages"
 import bcrypt from "bcryptjs"
 
@@ -145,8 +145,13 @@ export async function POST(request: NextRequest) {
   // メール認証トークン生成
   const verificationToken = generateVerificationToken()
 
+  // テンプレート取得をトランザクションと並列実行
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mieru-clinic.com"
+  const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}`
+
   // トランザクションで Clinic + User + SurveyTemplate + AdminNotification を一括作成
-  const result = await prisma.$transaction(async (tx) => {
+  const [result, templates] = await Promise.all([
+    prisma.$transaction(async (tx) => {
     const clinic = await tx.clinic.create({
       data: {
         name: clinicName.trim(),
@@ -200,12 +205,10 @@ export async function POST(request: NextRequest) {
     })
 
     return { clinic, user }
-  })
-
-  // メール認証メール送信（トランザクション外で実行、結果をレスポンスに含める）
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mieru-clinic.com"
-  const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}`
-  const { subject, html } = buildVerificationEmail(verifyUrl, clinicName.trim())
+  }),
+    getEmailTemplates(),
+  ])
+  const { subject, html } = buildVerificationEmail(verifyUrl, clinicName.trim(), templates.verification)
   let emailSent = false
   try {
     emailSent = await sendMail({ to: email.trim().toLowerCase(), subject, html })
