@@ -12,7 +12,6 @@ import type { PlanTier } from "@/types"
 
 const PLAN_BADGE_COLORS: Record<PlanTier, string> = {
   free: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-  starter: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
   standard: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400",
   enterprise: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
   demo: "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-400",

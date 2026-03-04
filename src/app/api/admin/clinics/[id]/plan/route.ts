@@ -6,7 +6,7 @@ import { updateClinicSettings } from "@/lib/queries/clinics"
 import { prisma } from "@/lib/prisma"
 import type { ClinicSettings, PlanTier } from "@/types"
 
-const VALID_PLANS: PlanTier[] = ["free", "starter", "standard", "enterprise", "demo"]
+const VALID_PLANS: PlanTier[] = ["free", "standard", "enterprise", "demo"]
 
 export async function PATCH(
   request: NextRequest,

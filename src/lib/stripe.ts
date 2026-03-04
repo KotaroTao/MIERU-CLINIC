@@ -51,8 +51,8 @@ export function isStripeConfigured(): boolean {
 
 /**
  * 環境変数から Stripe Price ID を取得する。
- * 例: STRIPE_PRICE_STARTER_MONTHLY=price_xxx
- *     STRIPE_PRICE_STANDARD_YEARLY=price_yyy
+ * 例: STRIPE_PRICE_STANDARD_MONTHLY=price_xxx
+ *     STRIPE_PRICE_ENTERPRISE_YEARLY=price_yyy
  */
 export function getStripePriceId(
   plan: PlanTier,
