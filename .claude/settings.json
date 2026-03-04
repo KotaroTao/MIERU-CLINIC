@@ -7,9 +7,17 @@
       "Bash(npm run validate)",
       "Bash(npm run build)",
       "Bash(npx tsc --noEmit*)",
+      "Bash(npx next lint*)",
       "Bash(npx prisma generate)",
       "Bash(npx prisma format)",
+      "Bash(npx prisma db push*)",
+      "Bash(npx prisma migrate*)",
       "Bash(npx tsx prisma/seed.ts*)",
+      "Bash(npx tsx prisma/update-templates.ts*)",
+      "Bash(npm run db:push)",
+      "Bash(npm run db:seed)",
+      "Bash(npm run db:migrate*)",
+      "Bash(npm run db:studio)",
       "Bash(git status*)",
       "Bash(git log*)",
       "Bash(git diff*)",
@@ -20,7 +28,12 @@
       "Bash(git fetch*)",
       "Bash(git pull*)",
       "Bash(git checkout*)",
-      "Bash(git stash*)"
+      "Bash(git stash*)",
+      "Bash(git merge*)",
+      "Bash(git rebase*)",
+      "Bash(git remote*)",
+      "Bash(git show*)",
+      "Bash(git rev-parse*)"
     ]
   },
   "hooks": {
@@ -30,6 +43,28 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit-validate.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-lint-fix.sh"
           }
         ]
       }

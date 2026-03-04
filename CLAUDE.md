@@ -112,8 +112,13 @@ npx prisma generate  # Prismaクライアント再生成（スキーマ変更後
 4. API変更時 → `auth()` ガードを忘れずに（`/api/surveys/submit` のみ例外）
 5. テキスト追加時 → `src/lib/messages.ts` に日本語テキストを集約
 
-### セッション開始時の自動コンテキスト復元
-SessionStartフック（`.claude/hooks/session-start.sh`）が `npm install` + `prisma generate` + `.claude/dev-context.md` 自動生成を実行。
+### Claude Code フック（自動品質管理）
+| フック | トリガー | 動作 |
+|--------|----------|------|
+| SessionStart | セッション開始時 | `npm install` + `prisma generate` + dev-context.md生成（TypeScriptエラー数・ESLint警告数・Prisma状態を含む） |
+| PreToolUse | `git commit` 実行前 | `tsc --noEmit` + `next lint` を自動実行。エラーがあればコミットをブロック |
+| PostToolUse | ファイル編集後 | 対象ファイルの `next lint --fix` を自動実行 |
+
 **新セッション開始後は `.claude/dev-context.md` を読んで状況を把握してから作業を開始すること。**
 
 ## 技術スタック
