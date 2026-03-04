@@ -4,7 +4,7 @@ import { getOperatorClinicId } from "@/lib/admin-mode"
 import { prisma } from "@/lib/prisma"
 import { ROLES } from "@/lib/constants"
 import { buildPlanInfo } from "@/lib/plan"
-import { isStripeConfigured } from "@/lib/stripe"
+import { isStripeConfigured, getAvailablePrices } from "@/lib/stripe"
 import { BillingPage } from "@/components/billing/billing-page"
 import type { ClinicSettings } from "@/types"
 
@@ -68,6 +68,7 @@ export default async function BillingSettingsPage() {
         createdAt: e.createdAt.toISOString(),
       }))}
       isOperatorMode={!!operatorClinicId}
+      availablePrices={getAvailablePrices()}
     />
   )
 }

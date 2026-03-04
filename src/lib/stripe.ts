@@ -67,6 +67,20 @@ export function isPaidPlan(plan: PlanTier): boolean {
   return PLANS[plan].price > 0
 }
 
+/** 設定済みのPrice IDがあるプラン+サイクルの組み合わせを返す */
+export function getAvailablePrices(): Array<{ plan: PlanTier; cycle: "monthly" | "yearly" }> {
+  const result: Array<{ plan: PlanTier; cycle: "monthly" | "yearly" }> = []
+  for (const plan of ALL_PLAN_TIERS) {
+    if (!isPaidPlan(plan)) continue
+    for (const cycle of ["monthly", "yearly"] as const) {
+      if (getStripePriceId(plan, cycle)) {
+        result.push({ plan, cycle })
+      }
+    }
+  }
+  return result
+}
+
 // ─── Stripe Customer ───
 
 /** Stripe Customer を取得 or 作成してIDを返す（SELECT FOR UPDATE で排他制御） */
