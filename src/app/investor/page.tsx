@@ -37,15 +37,16 @@ const products = [
     name: "D-Code Academy",
     tagline: "歯科医院スタッフ向けAI活用研修",
     description:
-      "AI（Claude Code）を活用し、プログラミング未経験の歯科医院スタッフがたった4日間で業務改善アプリを開発。歯科の現場を知るからこそ分かる「本当の課題」を、自分たちの手で解決する力を身につける実践型の研修プログラム。",
+      "2つのコースで歯科スタッフのAI活用を支援。「Claude Code導入コース」では完全初心者が開発に必要な基礎知識を習得し、Claude Codeでの開発環境を確実に構築。「開発実践コース」では中上級者が業務改善アプリを実際に開発。卒業生は専用コミュニティに参加し、開発相談や他の卒業生が作ったアプリの紹介などが定期的に配信される。講師の田尾耕太郎は、月間500万PV超の歯科相談掲示板システムや、カルテ数15,000超のアライナー矯正専用WEB管理システムなどを構築した実績を持つ。現在はClaude Codeをフル活用し、開発速度10倍、コストを従来の約1/10に削減。本プログラムでは田尾が実際に使っている開発環境を、プログラミング初心者でも使いやすいように改良して提供する。",
     pricing: [
-      { plan: "研修プログラム（3時間×4日間）", price: "¥300,000〜400,000/人", note: "助成金で75%オフ → 実質¥75,000〜100,000" },
+      { plan: "Claude Code導入コース（3時間×4日間）", price: "¥300,000〜400,000/人", note: "完全初心者向け。助成金で75%オフ → 実質¥75,000〜100,000" },
+      { plan: "開発実践コース（3時間×4日間）", price: "¥300,000〜400,000/人", note: "中上級者向け。助成金で75%オフ → 実質¥75,000〜100,000" },
     ],
     highlights: [
-      "歯科医師が教える唯一のAI開発研修",
+      "講師は歯科相談掲示板（月間500万PV超）や矯正管理システム（15,000カルテ超）を構築した現役開発者",
+      "Claude Code活用で開発速度10倍、コスト約1/10",
       "人材開発支援助成金で最大75%補助",
-      "院長は監督者として無料参加OK",
-      "卒業後はD-Code Academy専用グループに参加可能",
+      "卒業生専用コミュニティで継続サポート",
     ],
     color: "from-blue-500 to-cyan-400",
   },
@@ -193,21 +194,6 @@ export default function InvestorPage() {
                 <br className="hidden sm:block" />
                 API基盤とアプリストアで65,000院のデジタル化を支援する。
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link
-                  href="#products"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 text-white font-medium hover:opacity-90 transition-opacity"
-                >
-                  事業の詳細
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="#financials"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/10 text-gray-300 hover:bg-white/5 transition-colors"
-                >
-                  売上見込み
-                </Link>
-              </div>
             </div>
           </div>
         </section>
@@ -260,13 +246,13 @@ export default function InvestorPage() {
                   日本最大の医療版AI開発者コミュニティ
                 </p>
                 <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                  AI（Claude Code）を使い、未経験の歯科スタッフが4日間で業務改善アプリを開発。卒業生が核となるコミュニティが、レセコン会社への交渉カードになる。
+                  初心者向け「導入コース」と中上級者向け「開発実践コース」の2本立て。卒業生は専用コミュニティで開発相談やアプリ紹介を受けられ、この規模がレセコン会社への交渉カードになる。
                 </p>
                 <div className="space-y-2">
                   {[
-                    "歯科医師が教える唯一のAI研修",
+                    "講師は大規模歯科システム構築の実績を持つ現役開発者",
+                    "Claude Codeで開発速度10倍、コスト約1/10",
                     "助成金で最大75%補助",
-                    "卒業生コミュニティで継続成長",
                   ].map((h) => (
                     <div key={h} className="flex items-center gap-2 text-xs text-gray-300">
                       <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
@@ -460,56 +446,35 @@ export default function InvestorPage() {
               </div>
             </div>
 
-            {/* ── Community Strategy (Concise) ── */}
-            <div className="max-w-4xl mx-auto">
-              <div className="rounded-2xl border border-amber-500/10 bg-gradient-to-r from-amber-500/[0.03] to-orange-500/[0.03] p-8 sm:p-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <Users2 className="w-5 h-5 text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">最重要KPI：コミュニティの規模と熱量</h3>
-                    <p className="text-xs text-gray-500">Academy卒業生を核に、日本最大の医療版AI開発者コミュニティを最速で構築する</p>
-                  </div>
-                </div>
+          </div>
+        </section>
 
-                <div className="grid sm:grid-cols-3 gap-4 mb-6">
-                  {[
-                    {
-                      step: "STEP 1",
-                      title: "コミュニティを作る",
-                      desc: "Academy卒業生＋開発コンテスト＋オンライングループで歯科×AI開発者を急速に集結",
-                      color: "border-amber-500/20 bg-amber-500/5",
-                    },
-                    {
-                      step: "STEP 2",
-                      title: "交渉力を持つ",
-                      desc: "「数千人の開発者がAPIを待っている」事実がレセコン各社への最強の交渉カードに",
-                      color: "border-orange-500/20 bg-orange-500/5",
-                    },
-                    {
-                      step: "STEP 3",
-                      title: "一気に展開する",
-                      desc: "API連携実現→開発者がアプリを量産→Hub＋Storeの売上が爆発的に伸びる",
-                      color: "border-red-500/20 bg-red-500/5",
-                    },
-                  ].map((item) => (
-                    <div key={item.step} className={`rounded-xl border ${item.color} p-4`}>
-                      <div className="text-[10px] font-mono font-bold text-gray-500 mb-2">{item.step}</div>
-                      <h4 className="text-sm font-bold text-white mb-1">{item.title}</h4>
-                      <p className="text-xs text-gray-400 leading-relaxed">{item.desc}</p>
-                    </div>
-                  ))}
-                </div>
+        {/* ============================================================ */}
+        {/* The Biggest Wall — レセコンAPI開放                            */}
+        {/* ============================================================ */}
+        <section className="relative py-16 sm:py-20 border-t border-amber-500/20 overflow-hidden">
+          {/* Background glow */}
+          <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-amber-500/10 to-transparent pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="flex justify-center items-center gap-2 text-gray-600 text-xs">
-                  <span>コミュニティ拡大</span>
-                  <ArrowRight className="w-3 h-3 text-amber-500" />
-                  <span>交渉力UP</span>
-                  <ArrowRight className="w-3 h-3 text-orange-500" />
-                  <span>3事業が加速</span>
-                </div>
-              </div>
+          <div className="relative max-w-4xl mx-auto px-6 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold tracking-wider text-amber-400 uppercase">D-Code Project の核心</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-6 leading-tight">
+              医療AI開発の最大の壁
+              <br />
+              <span className="text-amber-400">レセコン会社がAPIを開放しない</span>
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-2xl mx-auto mb-8">
+              歯科のデジタル化を阻む最大のボトルネック。
+              <br className="hidden sm:block" />
+              この壁を突破することが、D-Code Projectの最も大きな目標である。
+            </p>
+            <div className="inline-flex items-center gap-2 text-sm text-amber-400/80">
+              <ChevronRight className="w-4 h-4" />
+              <span>なぜ開放されないのか、どう突破するのか — 詳しくは以下で解説</span>
             </div>
           </div>
         </section>
