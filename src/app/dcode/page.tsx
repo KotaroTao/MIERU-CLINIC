@@ -20,7 +20,7 @@ import {
 } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Investor Relations | D-Code Project",
+  title: "D-Code Project",
   description:
     "D-Code Project: 歯科医院のデジタル化を支援する3つの事業。研修・API基盤・アプリストアで65,000院の業務改善を実現",
   robots: { index: false, follow: false },
@@ -136,7 +136,7 @@ const milestones = [
 /* Component                                                           */
 /* ================================================================== */
 
-export default function InvestorPage() {
+export default function DCodePage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-100">
       {/* Background Effects */}
