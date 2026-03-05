@@ -523,7 +523,7 @@ export default function InvestorPage() {
                 },
                 {
                   icon: Scale,
-                  title: "市場がAPIを報酬しない",
+                  title: "市場がAPIを求めていなかった",
                   desc: "歯科医院にAPI有無で選ぶリテラシーがなく、ディーラー営業が主流。APIを出しても売上が増えない。",
                   color: "text-violet-400",
                 },
