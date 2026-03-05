@@ -4,33 +4,23 @@ import {
   GraduationCap,
   Code2,
   Store,
-  TrendingUp,
-  Users,
   Users2,
-  ShieldCheck,
   Crown,
-  MessageCircle,
-  Trophy,
-  Megaphone,
   Zap,
   ArrowRight,
   ChevronRight,
-  Stethoscope,
   Layers,
-  Globe,
-  BarChart3,
-  Rocket,
   CheckCircle2,
   Link2,
-  Briefcase,
   Lock,
   AlertTriangle,
   Database,
   Scale,
+  ShieldCheck,
 } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Investor Relations | D-Code Project",
+  title: "D-Code Project",
   description:
     "D-Code Project: 歯科医院のデジタル化を支援する3つの事業。研修・API基盤・アプリストアで65,000院の業務改善を実現",
   robots: { index: false, follow: false },
@@ -47,15 +37,16 @@ const products = [
     name: "D-Code Academy",
     tagline: "歯科医院スタッフ向けAI活用研修",
     description:
-      "AI（Claude Code）を活用し、プログラミング未経験の歯科医院スタッフがたった4日間で業務改善アプリを開発。歯科の現場を知るからこそ分かる「本当の課題」を、自分たちの手で解決する力を身につける実践型の研修プログラム。",
+      "2つのコースで歯科スタッフのAI活用を支援。「Claude Code導入コース」では完全初心者が開発に必要な基礎知識を習得し、Claude Codeでの開発環境を確実に構築。「開発実践コース」では中上級者が業務改善アプリを実際に開発。卒業生は専用コミュニティに参加し、開発相談や他の卒業生が作ったアプリの紹介などが定期的に配信される。講師の田尾耕太郎は、月間500万PV超の歯科相談掲示板システムや、カルテ数15,000超のアライナー矯正専用WEB管理システムなどを構築した実績を持つ。現在はClaude Codeをフル活用し、開発速度10倍、コストを従来の約1/10に削減。本プログラムでは田尾が実際に使っている開発環境を、プログラミング初心者でも使いやすいように改良して提供する。",
     pricing: [
-      { plan: "研修プログラム（3時間×4日間）", price: "¥300,000〜400,000/人", note: "助成金で75%オフ → 実質¥75,000〜100,000" },
+      { plan: "Claude Code導入コース（3時間×4日間）", price: "¥300,000〜400,000/人", note: "完全初心者向け。助成金で75%オフ → 実質¥75,000〜100,000" },
+      { plan: "開発実践コース（3時間×4日間）", price: "¥300,000〜400,000/人", note: "中上級者向け。助成金で75%オフ → 実質¥75,000〜100,000" },
     ],
     highlights: [
-      "歯科医師が教える唯一のAI開発研修",
+      "講師は歯科相談掲示板（月間500万PV超）や矯正管理システム（15,000カルテ超）を構築した現役開発者",
+      "Claude Code活用で開発速度10倍、コスト約1/10",
       "人材開発支援助成金で最大75%補助",
-      "院長は監督者として無料参加OK",
-      "卒業後はD-Code Academy専用グループに参加可能",
+      "卒業生専用コミュニティで継続サポート",
     ],
     color: "from-blue-500 to-cyan-400",
   },
@@ -68,7 +59,7 @@ const products = [
       "歯科医院で使われている各社のレセコン（電子カルテ）のデータを、統一されたAPIで簡単に利用できる仕組みを提供。アプリ開発者はレセコンごとの違いを気にせず、患者情報や予約データを活用したアプリを作れるようになる。",
     pricing: [
       { plan: "基本料", price: "¥30,000/月", note: "2万円分のAPI利用料込み" },
-      { plan: "API利用料", price: "¥5/回", note: "レセコンAPIを1回呼び出すごとに発生" },
+      { plan: "API利用料", price: "¥3〜5/回", note: "レセコンAPIを1回呼び出すごとに発生" },
     ],
     highlights: [
       "各社レセコンとの連携を一本化",
@@ -99,95 +90,53 @@ const products = [
 
 const revenueData = {
   year1: {
-    total: "1.0",
-    profit: "0.5",
+    total: "1.4",
+    profit: "0.7",
     margin: "50%",
     items: [
-      { name: "研修事業（Academy）", amount: 6000, pct: 60 },
-      { name: "API基盤（Hub）", amount: 1000, pct: 10 },
-      { name: "アプリストア（Store）", amount: 500, pct: 5 },
-      { name: "コンサル・その他", amount: 2500, pct: 25 },
+      { name: "研修事業（Academy）", amount: 7500, pct: 54 },
+      { name: "製品化コンサル（Store）", amount: 1500, pct: 11 },
+      { name: "アプリ販売（Store）", amount: 5000, pct: 35 },
     ],
   },
   year2: {
-    total: "3.5",
-    profit: "1.5",
-    margin: "43%",
+    total: "4.5",
+    profit: "2.0",
+    margin: "44%",
     items: [
-      { name: "研修事業（Academy）", amount: 14000, pct: 40 },
-      { name: "API基盤（Hub）", amount: 8400, pct: 24 },
-      { name: "アプリストア（Store）", amount: 7000, pct: 20 },
-      { name: "コンサル・その他", amount: 5600, pct: 16 },
+      { name: "研修事業（Academy）", amount: 15000, pct: 33 },
+      { name: "アプリ販売・レベシェア（Store）", amount: 15000, pct: 33 },
+      { name: "API基盤（Hub）", amount: 10000, pct: 22 },
+      { name: "コンサル・その他", amount: 5000, pct: 12 },
     ],
   },
   year3: {
-    total: "10.0",
-    profit: "7.0",
-    margin: "70%",
+    total: "12.0",
+    profit: "8.0",
+    margin: "67%",
     items: [
-      { name: "研修事業（Academy）", amount: 25000, pct: 25 },
-      { name: "API基盤（Hub）", amount: 35000, pct: 35 },
-      { name: "アプリストア（Store）", amount: 20000, pct: 20 },
-      { name: "コンサル・医科展開", amount: 20000, pct: 20 },
+      { name: "研修事業（Academy）", amount: 25000, pct: 21 },
+      { name: "アプリ販売・レベシェア（Store）", amount: 35000, pct: 29 },
+      { name: "API基盤（Hub）", amount: 40000, pct: 33 },
+      { name: "コンサル・医科展開", amount: 20000, pct: 17 },
     ],
   },
 }
 
-const whyUs = [
-  {
-    icon: Stethoscope,
-    title: "歯科医師が創業",
-    desc: "創業者自身が歯科医師。臨床経験に基づく深い業界理解と、現場の課題を知り尽くしたサービス設計。「外から見た歯科DX」ではなく「中から変える歯科DX」。",
-  },
-  {
-    icon: Layers,
-    title: "3事業の好循環",
-    desc: "研修が開発者を生み、開発者がアプリを生み、アプリが医院を集め、医院が新たな研修受講者を生む。一方通行ではない、自然に成長する循環構造。",
-  },
-  {
-    icon: ShieldCheck,
-    title: "自社サービスの開発・運用実績",
-    desc: "患者体験改善プラットフォーム「MIERU Clinic」や、QRコード診断で新患を集める「QRくるくる診断DX」を自社で開発・運用中。歯科向けサービスの開発ノウハウを蓄積済み。",
-  },
-  {
-    icon: Globe,
-    title: "歯科から医療全体への展開",
-    desc: "歯科（65,000院）で仕組みを確立した後、医科（102,000院）→ 介護（40,000施設）→ 薬局（60,000店）へ展開可能。サービスの構造は業種を問わず応用できる。",
-  },
-]
-
 const milestones = [
-  { month: "M1-3", title: "基盤づくり", items: ["研修カリキュラム完成", "D-Code Hub 試作版の開発", "レセコン会社1社と連携交渉"] },
-  { month: "M4-6", title: "研修スタート", items: ["対面研修の開始", "受講者50名達成", "D-Code Hub テスト運用"] },
-  { month: "M7-12", title: "事業拡大", items: ["D-Code Hub 50院導入", "D-Code Store オープン", "認定講師3名育成"] },
-  { month: "Y2", title: "全国展開", items: ["講師5名・全国3都市で研修", "Hub 400院導入", "レセコン会社との正式提携"] },
-  { month: "Y3", title: "売上10億円", items: ["講師10名・全国5都市", "Hub 1,500院導入", "医科への展開開始"] },
+  { month: "M1-3", title: "Academy最速立ち上げ", items: ["研修カリキュラム完成", "Academy受講者募集開始", "認定講師2名育成"] },
+  { month: "M4-6", title: "Academy本格稼働", items: ["Academy受講者100名達成", "Store製品化コンサル案件獲得", "Store初期アプリ販売開始"] },
+  { month: "M7-12", title: "Store拡大", items: ["Academy受講者200名・売上7,500万達成", "Storeアプリ販売5,000万達成", "レベニューシェア型案件の拡大"] },
+  { month: "Y2", title: "Hub参入・全国展開", items: ["Academy・Storeの実績をもとにレセコン会社へAPI開放交渉", "D-Code Hub テスト運用開始", "講師5名・全国3都市で研修展開"] },
+  { month: "Y3", title: "売上12億円", items: ["Hub本格稼働・レセコン連携拡大", "Store年間売上3.5億円", "医科への展開開始"] },
 ]
 
-const competitiveEdges = [
-  { label: "汎用AI研修", weakness: "歯科の課題を知らない", dcode: "歯科医師が教える" },
-  { label: "歯科コンサル", weakness: "高額・担当者次第", dcode: "ITで仕組み化・低コスト" },
-  { label: "レセコン会社", weakness: "自社開発のみで閉鎖的", dcode: "APIを開放し誰でも開発可能" },
-]
-
-const trackRecord = [
-  {
-    name: "MIERU Clinic",
-    description: "歯科医院向け患者体験改善プラットフォーム。匿名アンケートで患者満足度を「見える化」し、改善アクションの効果測定まで一気通貫で支援。",
-    url: "https://mieru-clinic.com",
-  },
-  {
-    name: "QRくるくる診断DX",
-    description: "歯科医院専用の集患ツール。QRコードを載せるだけで「お口年齢診断」等の診断コンテンツが新患を呼び込む。経路別QRコード発行で広告効果を可視化し、診断結果画面から予約へ直接誘導。14日間無料・導入5分。",
-    url: "https://qrqr-dental.com",
-  },
-]
 
 /* ================================================================== */
 /* Component                                                           */
 /* ================================================================== */
 
-export default function InvestorPage() {
+export default function DCodePage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-100">
       {/* Background Effects */}
@@ -244,21 +193,6 @@ export default function InvestorPage() {
                 <br className="hidden sm:block" />
                 API基盤とアプリストアで65,000院のデジタル化を支援する。
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link
-                  href="#products"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 text-white font-medium hover:opacity-90 transition-opacity"
-                >
-                  事業の詳細
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="#financials"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/10 text-gray-300 hover:bg-white/5 transition-colors"
-                >
-                  売上見込み
-                </Link>
-              </div>
             </div>
           </div>
         </section>
@@ -311,13 +245,13 @@ export default function InvestorPage() {
                   日本最大の医療版AI開発者コミュニティ
                 </p>
                 <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                  AI（Claude Code）を使い、未経験の歯科スタッフが4日間で業務改善アプリを開発。卒業生が核となるコミュニティが、レセコン会社への交渉カードになる。
+                  初心者向け「導入コース」と中上級者向け「開発実践コース」の2本立て。卒業生は専用コミュニティで開発相談やアプリ紹介を受けられ、この規模がレセコン会社への交渉カードになる。
                 </p>
                 <div className="space-y-2">
                   {[
-                    "歯科医師が教える唯一のAI研修",
+                    "講師は大規模歯科システム構築の実績を持つ現役開発者",
+                    "Claude Codeで開発速度10倍、コスト約1/10",
                     "助成金で最大75%補助",
-                    "卒業生コミュニティで継続成長",
                   ].map((h) => (
                     <div key={h} className="flex items-center gap-2 text-xs text-gray-300">
                       <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
@@ -511,89 +445,35 @@ export default function InvestorPage() {
               </div>
             </div>
 
-            {/* ── Community Strategy (Concise) ── */}
-            <div className="max-w-4xl mx-auto">
-              <div className="rounded-2xl border border-amber-500/10 bg-gradient-to-r from-amber-500/[0.03] to-orange-500/[0.03] p-8 sm:p-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <Users2 className="w-5 h-5 text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">最重要KPI：コミュニティの規模と熱量</h3>
-                    <p className="text-xs text-gray-500">Academy卒業生を核に、日本最大の医療版AI開発者コミュニティを最速で構築する</p>
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-3 gap-4 mb-6">
-                  {[
-                    {
-                      step: "STEP 1",
-                      title: "コミュニティを作る",
-                      desc: "Academy卒業生＋ハッカソン＋オンライングループで歯科×AI開発者を急速に集結",
-                      color: "border-amber-500/20 bg-amber-500/5",
-                    },
-                    {
-                      step: "STEP 2",
-                      title: "交渉力を持つ",
-                      desc: "「数千人の開発者がAPIを待っている」事実がレセコン各社への最強の交渉カードに",
-                      color: "border-orange-500/20 bg-orange-500/5",
-                    },
-                    {
-                      step: "STEP 3",
-                      title: "一気に展開する",
-                      desc: "API連携実現→開発者がアプリを量産→Hub＋Storeの売上が爆発的に伸びる",
-                      color: "border-red-500/20 bg-red-500/5",
-                    },
-                  ].map((item) => (
-                    <div key={item.step} className={`rounded-xl border ${item.color} p-4`}>
-                      <div className="text-[10px] font-mono font-bold text-gray-500 mb-2">{item.step}</div>
-                      <h4 className="text-sm font-bold text-white mb-1">{item.title}</h4>
-                      <p className="text-xs text-gray-400 leading-relaxed">{item.desc}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-center items-center gap-2 text-gray-600 text-xs">
-                  <span>コミュニティ拡大</span>
-                  <ArrowRight className="w-3 h-3 text-amber-500" />
-                  <span>交渉力UP</span>
-                  <ArrowRight className="w-3 h-3 text-orange-500" />
-                  <span>3事業が加速</span>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
         {/* ============================================================ */}
-        {/* Market Problem                                               */}
+        {/* The Biggest Wall — レセコンAPI開放                            */}
         {/* ============================================================ */}
-        <section className="py-20 sm:py-24">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="max-w-3xl mx-auto text-center mb-16">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-                歯科業界は
-                <span className="text-red-400">20年前のまま</span>
-                止まっている
-              </h2>
-              <p className="text-gray-400 leading-relaxed">
-                レセコン（電子カルテ）以外のIT化はほぼゼロ。予約管理は紙と電話、患者情報の共有はカルテの手渡し、経営分析は院長の勘。65,000院がデジタル化を待っている。
-              </p>
+        <section className="relative py-16 sm:py-20 border-t border-amber-500/20 overflow-hidden">
+          {/* Background glow */}
+          <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-amber-500/10 to-transparent pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative max-w-4xl mx-auto px-6 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold tracking-wider text-amber-400 uppercase">D-Code Project の核心</span>
             </div>
-            <div className="grid sm:grid-cols-3 gap-6">
-              {[
-                { stat: "83%", desc: "紙ベースの予約管理を続けている歯科医院の割合" },
-                { stat: "92%", desc: "データに基づく経営判断ができていない院長の割合" },
-                { stat: "¥0", desc: "歯科に特化したデジタル化支援サービスへの投資額（国内）" },
-              ].map((item) => (
-                <div
-                  key={item.desc}
-                  className="rounded-xl border border-white/5 bg-white/[0.02] p-6 text-center"
-                >
-                  <div className="text-3xl font-bold text-red-400 mb-3">{item.stat}</div>
-                  <p className="text-sm text-gray-400">{item.desc}</p>
-                </div>
-              ))}
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-6 leading-tight">
+              医療AI開発の最大の壁
+              <br />
+              <span className="text-amber-400">レセコン会社がAPIを開放しない</span>
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-2xl mx-auto mb-8">
+              歯科のデジタル化を阻む最大のボトルネック。
+              <br className="hidden sm:block" />
+              この壁を突破することが、D-Code Projectの最も大きな目標である。
+            </p>
+            <div className="inline-flex items-center gap-2 text-sm text-amber-400/80">
+              <ChevronRight className="w-4 h-4" />
+              <span>なぜ開放されないのか、どう突破するのか — 詳しくは以下で解説</span>
             </div>
           </div>
         </section>
@@ -642,7 +522,7 @@ export default function InvestorPage() {
                 },
                 {
                   icon: Scale,
-                  title: "市場がAPIを報酬しない",
+                  title: "市場がAPIを求めていなかった",
                   desc: "歯科医院にAPI有無で選ぶリテラシーがなく、ディーラー営業が主流。APIを出しても売上が増えない。",
                   color: "text-violet-400",
                 },
@@ -683,29 +563,13 @@ export default function InvestorPage() {
             <div className="max-w-3xl mx-auto rounded-xl border border-amber-500/20 bg-amber-500/5 p-8">
               <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
                 <Zap className="w-5 h-5" />
-                D-Code Projectの戦略：先に需要を作る
+                D-Code Projectの戦略：Academy → Store → Hub
               </h3>
               <p className="text-gray-300 text-sm leading-relaxed mb-4">
                 レセコン会社にとってAPI開放は「コストは確実、リターンは不確実」。彼らが動くのは、連携しないことが失注理由になる市場環境が整ったとき。
-                <span className="text-white font-semibold">日本最大の医療AI開発者コミュニティを先に構築し、レセコン会社がAPIを公開するメリットを明確にする</span>
+                <span className="text-white font-semibold">まずAcademyで歯科AI人材を育成し、Storeでアプリの実績を積み上げる。この2つの実績をもとにレセコン会社へAPI開放を交渉する</span>
                 ことで、この構造を突破する。
               </p>
-              <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                {[
-                  { label: "バイパス", desc: "レセコンデータに依存しない価値を先に作る（アンケート・研修起点）" },
-                  { label: "手入力ブリッジ", desc: "月次手入力 → CSV → API と段階的に移行" },
-                  { label: "デファクト化", desc: "ユーザー数拡大で「連携しないと選ばれない」圧力を形成" },
-                  { label: "ORCA攻略", desc: "唯一OSSのORCAから実績を作り、他ベンダーへの交渉材料に" },
-                ].map((s) => (
-                  <div key={s.label} className="flex gap-3">
-                    <ChevronRight className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-                    <div>
-                      <span className="text-sm font-medium text-white">{s.label}</span>
-                      <p className="text-xs text-gray-400 mt-0.5">{s.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
 
               {/* The "only path" callout */}
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-5">
@@ -802,113 +666,6 @@ export default function InvestorPage() {
         </section>
 
         {/* ============================================================ */}
-        {/* Track Record                                                 */}
-        {/* ============================================================ */}
-        <section className="py-20 sm:py-24 border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                  自社開発
-                </span>
-                の実績
-              </h2>
-              <p className="text-gray-400">歯科業界向けサービスの開発・運用ノウハウを蓄積済み</p>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-              {trackRecord.map((item) => (
-                <div
-                  key={item.name}
-                  className="rounded-xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 hover:border-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                      <Briefcase className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold">{item.name}</h3>
-                  </div>
-                  <p className="text-sm text-gray-400 leading-relaxed">{item.description}</p>
-                  {item.url && (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 mt-4 transition-colors"
-                    >
-                      サイトを見る <ArrowRight className="w-3 h-3" />
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* Why Us                                                       */}
-        {/* ============================================================ */}
-        <section className="py-20 sm:py-24 border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-                なぜ
-                <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                  私たちが
-                </span>
-                やるのか
-              </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto">
-                歯科のデジタル化は「外からIT企業が持ち込むもの」ではない。業界の内側から、現場を知る者が変える必要がある。
-              </p>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-6">
-              {whyUs.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 hover:border-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                      <item.icon className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold">{item.title}</h3>
-                  </div>
-                  <p className="text-sm text-gray-400 leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================================ */}
-        {/* Competitive Advantage                                        */}
-        {/* ============================================================ */}
-        <section className="py-20 sm:py-24 border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4">他社との違い</h2>
-              <p className="text-gray-400">既存のどのサービスとも異なる立ち位置</p>
-            </div>
-            <div className="max-w-3xl mx-auto">
-              <div className="rounded-xl border border-white/5 overflow-hidden">
-                <div className="grid grid-cols-3 gap-0 text-sm font-semibold bg-white/[0.03] border-b border-white/5">
-                  <div className="p-4 text-gray-400">既存サービス</div>
-                  <div className="p-4 text-gray-400 border-l border-white/5">課題</div>
-                  <div className="p-4 text-blue-400 border-l border-white/5">D-Code</div>
-                </div>
-                {competitiveEdges.map((row) => (
-                  <div key={row.label} className="grid grid-cols-3 gap-0 text-sm border-b border-white/5 last:border-0">
-                    <div className="p-4 text-gray-300 font-medium">{row.label}</div>
-                    <div className="p-4 text-gray-500 border-l border-white/5">{row.weakness}</div>
-                    <div className="p-4 text-gray-200 border-l border-white/5">{row.dcode}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================================ */}
         {/* Financial Projections                                        */}
         {/* ============================================================ */}
         <section id="financials" className="py-20 sm:py-24 border-t border-white/5">
@@ -963,12 +720,12 @@ export default function InvestorPage() {
             {/* Monthly Revenue Growth */}
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 max-w-3xl mx-auto">
               <h3 className="text-lg font-semibold mb-2">月額売上の成長イメージ</h3>
-              <p className="text-sm text-gray-400 mb-6">Hub・Storeの月額収益が3年目で事業の柱に成長</p>
+              <p className="text-sm text-gray-400 mb-6">Academy起点でStoreを拡大し、3年目にHub収益が本格化</p>
               <div className="space-y-4">
                 {[
-                  { label: "1年目末", monthly: "235万円", yearly: "0.28億円", width: 3 },
-                  { label: "2年目末", monthly: "2,770万円", yearly: "3.32億円", width: 37 },
-                  { label: "3年目末", monthly: "7,520万円", yearly: "9.02億円", width: 100 },
+                  { label: "1年目末", monthly: "1,170万円", yearly: "1.4億円", width: 12 },
+                  { label: "2年目末", monthly: "3,750万円", yearly: "4.5億円", width: 38 },
+                  { label: "3年目末", monthly: "10,000万円", yearly: "12.0億円", width: 100 },
                 ].map((row) => (
                   <div key={row.label}>
                     <div className="flex justify-between text-sm mb-1.5">
@@ -989,10 +746,10 @@ export default function InvestorPage() {
               </div>
               <div className="mt-6 pt-6 border-t border-white/5 text-center">
                 <p className="text-sm text-gray-400">
-                  3年目末の年間売上 ¥9.02億 × 評価倍率 10〜20倍 =
+                  3年目末の年間売上 ¥12.0億 × 評価倍率 10〜20倍 =
                 </p>
                 <p className="text-2xl font-bold mt-2 bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                  想定企業価値 ¥90〜180億
+                  想定企業価値 120〜240億円
                 </p>
               </div>
             </div>
@@ -1043,52 +800,6 @@ export default function InvestorPage() {
         </section>
 
         {/* ============================================================ */}
-        {/* Market Size Expansion                                        */}
-        {/* ============================================================ */}
-        <section className="py-20 sm:py-24 border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4">将来の市場規模</h2>
-              <p className="text-gray-400">歯科で確立した仕組みを医療・介護・薬局へ展開</p>
-            </div>
-            <div className="max-w-3xl mx-auto">
-              <div className="space-y-4">
-                {[
-                  { market: "歯科（1年目〜）", count: "65,000院", size: "245億円", width: 25, color: "from-blue-500 to-blue-400", active: true },
-                  { market: "医科（3年目〜）", count: "102,000院", size: "367億円", width: 38, color: "from-violet-500 to-violet-400", active: false },
-                  { market: "介護（4年目〜）", count: "40,000施設", size: "144億円", width: 15, color: "from-emerald-500 to-emerald-400", active: false },
-                  { market: "薬局（4年目〜）", count: "60,000店", size: "216億円", width: 22, color: "from-amber-500 to-amber-400", active: false },
-                ].map((m) => (
-                  <div key={m.market} className={`rounded-xl border p-5 ${m.active ? 'border-blue-500/20 bg-blue-500/5' : 'border-white/5 bg-white/[0.02]'}`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <span className="font-medium text-sm">{m.market}</span>
-                        <span className="text-xs text-gray-500 ml-2">{m.count}</span>
-                      </div>
-                      <span className="text-sm font-semibold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                        {m.size}
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${m.color} ${!m.active ? 'opacity-30' : ''}`}
-                        style={{ width: `${m.width}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="text-center mt-8 p-4 rounded-xl border border-white/5 bg-white/[0.02]">
-                <span className="text-sm text-gray-400">合計市場規模:</span>
-                <span className="text-2xl font-bold ml-3 bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                  ¥972億
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================================ */}
         {/* CTA                                                          */}
         {/* ============================================================ */}
         <section className="py-20 sm:py-24 border-t border-white/5">
@@ -1103,7 +814,7 @@ export default function InvestorPage() {
               <p className="text-gray-400 mb-8 leading-relaxed">
                 65,000院の歯科医院が変われば、日本の医療が変わる。
                 <br />
-                D-Code Projectは、その最初の一歩を踏み出しています。
+                D-Code Projectは、その変化を最加速します。
               </p>
               <div className="inline-flex flex-col items-center gap-4">
                 <div className="text-sm text-gray-500">
