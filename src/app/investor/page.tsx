@@ -516,6 +516,36 @@ export default function InvestorPage() {
         </section>
 
         {/* ============================================================ */}
+        {/* The Biggest Wall — レセコンAPI開放                            */}
+        {/* ============================================================ */}
+        <section className="relative py-16 sm:py-20 border-t border-amber-500/20 overflow-hidden">
+          {/* Background glow */}
+          <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-amber-500/10 to-transparent pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative max-w-4xl mx-auto px-6 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold tracking-wider text-amber-400 uppercase">D-Code Project の核心</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-6 leading-tight">
+              医療AI開発の最大の壁
+              <br />
+              <span className="text-amber-400">レセコン会社がAPIを開放しない</span>
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-2xl mx-auto mb-8">
+              歯科のデジタル化を阻む最大のボトルネック。
+              <br className="hidden sm:block" />
+              この壁を突破することが、D-Code Projectの最も大きな目標である。
+            </p>
+            <div className="inline-flex items-center gap-2 text-sm text-amber-400/80">
+              <ChevronRight className="w-4 h-4" />
+              <span>なぜ開放されないのか、どう突破するのか — 詳しくは以下で解説</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================ */}
         {/* Why レセコン Won't Open APIs                                 */}
         {/* ============================================================ */}
         <section className="py-20 sm:py-24 border-t border-white/5">
