@@ -23,6 +23,10 @@ import {
   CheckCircle2,
   Link2,
   Briefcase,
+  Lock,
+  AlertTriangle,
+  Database,
+  Scale,
 } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -220,11 +224,6 @@ export default function InvestorPage() {
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
           <div className="max-w-7xl mx-auto px-6 relative">
             <div className="max-w-5xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-400 text-sm mb-8">
-                <Rocket className="w-3.5 h-3.5" />
-                Pre-Seed / Seed Round
-              </div>
-
               {/* Project name — large & prominent */}
               <div className="mb-6">
                 <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-none">
@@ -401,6 +400,18 @@ export default function InvestorPage() {
                   <span className="text-white font-semibold">「これだけの開発者がAPIを求めている」</span>
                   という既成事実を作ることで、交渉の主導権を握る。
                 </p>
+                <div className="mt-4 pt-4 border-t border-amber-500/10">
+                  <p className="text-sm text-gray-300 leading-relaxed">
+                    <span className="text-amber-400 font-bold">レセコンAPIを使える唯一の方法</span>
+                    <br className="sm:hidden" />
+                    <span className="hidden sm:inline"> — </span>
+                    API連携が実現したとき、アクセスできるのはD-Code Hub経由のみ。
+                    <br />
+                    医療AI開発を志すエンジニアにとって、
+                    <span className="text-white font-semibold">D-Codeへの参加がレセコンAPIを利用できる唯一の道</span>
+                    となる。この独占的アクセス権がコミュニティの求心力を生む。
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -435,6 +446,131 @@ export default function InvestorPage() {
                   <p className="text-sm text-gray-400">{item.desc}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================ */}
+        {/* Why レセコン Won't Open APIs                                 */}
+        {/* ============================================================ */}
+        <section className="py-20 sm:py-24 border-t border-white/5">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="max-w-3xl mx-auto text-center mb-16">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+                なぜレセコン会社は
+                <span className="text-amber-400">APIを開放しない</span>
+                のか
+              </h2>
+              <p className="text-gray-400 leading-relaxed">
+                歯科のデジタル化が進まない最大のボトルネックは、レセコン（電子カルテ）ベンダーがAPIを出さないこと。これは怠慢ではなく、合理的な経営判断の結果である。
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {[
+                {
+                  icon: Lock,
+                  title: "ロックイン戦略",
+                  desc: "データ移行コストが極めて高く、API開放は乗り換え障壁を下げてしまう。「うちでしか使えない」状態が最大の防御壁。",
+                  color: "text-red-400",
+                },
+                {
+                  icon: Layers,
+                  title: "周辺ビジネスの侵食",
+                  desc: "予約管理・会計連携など周辺機能を自社で囲い込み追加課金。API開放でサードパーティに代替されるリスク。",
+                  color: "text-orange-400",
+                },
+                {
+                  icon: Database,
+                  title: "20〜30年前の技術的負債",
+                  desc: "Windows専用・独自DBのモノリシック設計。そもそもAPI化できる内部構造になっていない。",
+                  color: "text-yellow-400",
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "責任・セキュリティ回避",
+                  desc: "医療データの外部連携は個人情報保護法・3省2ガイドラインへの準拠コスト増。障害時の責任問題も曖昧に。",
+                  color: "text-blue-400",
+                },
+                {
+                  icon: Scale,
+                  title: "市場がAPIを報酬しない",
+                  desc: "歯科医院にAPI有無で選ぶリテラシーがなく、ディーラー営業が主流。APIを出しても売上が増えない。",
+                  color: "text-violet-400",
+                },
+                {
+                  icon: AlertTriangle,
+                  title: "競合への情報流出",
+                  desc: "API仕様 ≒ 内部データ構造の公開。寡占市場で数社が互いを警戒し、情報を出したくない。",
+                  color: "text-pink-400",
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-xl border border-white/5 bg-white/[0.02] p-6"
+                >
+                  <item.icon className={`w-6 h-6 ${item.color} mb-4`} />
+                  <h3 className="text-base font-semibold text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-400 leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* The core problem for AI developers */}
+            <div className="max-w-3xl mx-auto rounded-xl border-2 border-red-500/20 bg-red-500/5 p-8 mb-8">
+              <h3 className="text-lg font-bold text-red-400 mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                医療AI開発の最大のハードル
+              </h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                歯科AI開発で最も価値のあるデータはレセコン（電子カルテ）の中にある。しかし、レセコンAPIとの連携は
+                <span className="text-white font-semibold">個人や単独の医院が実現することはまず不可能</span>
+                。ベンダーには開放する経済的メリットがなく、個別交渉では門前払いされる。これが歯科AI開発の最大のボトルネックであり、同時に
+                <span className="text-amber-400 font-semibold">最大の参入障壁</span>
+                になる。
+              </p>
+            </div>
+
+            {/* D-Code's approach callout */}
+            <div className="max-w-3xl mx-auto rounded-xl border border-amber-500/20 bg-amber-500/5 p-8">
+              <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                D-Code Projectの戦略：先に需要を作る
+              </h3>
+              <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                レセコン会社にとってAPI開放は「コストは確実、リターンは不確実」。彼らが動くのは、連携しないことが失注理由になる市場環境が整ったとき。
+                <span className="text-white font-semibold">日本最大の医療AI開発者コミュニティを先に構築し、レセコン会社がAPIを公開するメリットを明確にする</span>
+                ことで、この構造を突破する。
+              </p>
+              <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                {[
+                  { label: "バイパス", desc: "レセコンデータに依存しない価値を先に作る（アンケート・研修起点）" },
+                  { label: "手入力ブリッジ", desc: "月次手入力 → CSV → API と段階的に移行" },
+                  { label: "デファクト化", desc: "ユーザー数拡大で「連携しないと選ばれない」圧力を形成" },
+                  { label: "ORCA攻略", desc: "唯一OSSのORCAから実績を作り、他ベンダーへの交渉材料に" },
+                ].map((s) => (
+                  <div key={s.label} className="flex gap-3">
+                    <ChevronRight className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                    <div>
+                      <span className="text-sm font-medium text-white">{s.label}</span>
+                      <p className="text-xs text-gray-400 mt-0.5">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* The "only path" callout */}
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-5">
+                <p className="text-sm text-gray-200 leading-relaxed text-center">
+                  <span className="text-amber-400 font-bold text-base">AI開発者にとって、D-Codeは唯一の道になる</span>
+                  <br />
+                  <span className="text-gray-400 mt-2 inline-block">
+                    レセコンAPIが開放されたとき、それを利用できるのはD-Code Hub経由のみ。
+                    AI開発者がレセコンデータを活用した歯科アプリを作りたければ、D-Codeコミュニティに参加するしかない。
+                    この構造こそが、プラットフォームの最大の競争優位性となる。
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
         </section>
