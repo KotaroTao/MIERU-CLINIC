@@ -224,11 +224,6 @@ export default function InvestorPage() {
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
           <div className="max-w-7xl mx-auto px-6 relative">
             <div className="max-w-5xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-400 text-sm mb-8">
-                <Rocket className="w-3.5 h-3.5" />
-                Pre-Seed / Seed Round
-              </div>
-
               {/* Project name — large & prominent */}
               <div className="mb-6">
                 <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-none">
@@ -405,6 +400,18 @@ export default function InvestorPage() {
                   <span className="text-white font-semibold">「これだけの開発者がAPIを求めている」</span>
                   という既成事実を作ることで、交渉の主導権を握る。
                 </p>
+                <div className="mt-4 pt-4 border-t border-amber-500/10">
+                  <p className="text-sm text-gray-300 leading-relaxed">
+                    <span className="text-amber-400 font-bold">レセコンAPIを使える唯一の方法</span>
+                    <br className="sm:hidden" />
+                    <span className="hidden sm:inline"> — </span>
+                    API連携が実現したとき、アクセスできるのはD-Code Hub経由のみ。
+                    <br />
+                    医療AI開発を志すエンジニアにとって、
+                    <span className="text-white font-semibold">D-Codeへの参加がレセコンAPIを利用できる唯一の道</span>
+                    となる。この独占的アクセス権がコミュニティの求心力を生む。
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -509,16 +516,33 @@ export default function InvestorPage() {
               ))}
             </div>
 
+            {/* The core problem for AI developers */}
+            <div className="max-w-3xl mx-auto rounded-xl border-2 border-red-500/20 bg-red-500/5 p-8 mb-8">
+              <h3 className="text-lg font-bold text-red-400 mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                医療AI開発の最大のハードル
+              </h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                歯科AI開発で最も価値のあるデータはレセコン（電子カルテ）の中にある。しかし、レセコンAPIとの連携は
+                <span className="text-white font-semibold">個人や単独の医院が実現することはまず不可能</span>
+                。ベンダーには開放する経済的メリットがなく、個別交渉では門前払いされる。これが歯科AI開発の最大のボトルネックであり、同時に
+                <span className="text-amber-400 font-semibold">最大の参入障壁</span>
+                になる。
+              </p>
+            </div>
+
             {/* D-Code's approach callout */}
             <div className="max-w-3xl mx-auto rounded-xl border border-amber-500/20 bg-amber-500/5 p-8">
               <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
                 <Zap className="w-5 h-5" />
-                D-Code Projectの戦略
+                D-Code Projectの戦略：先に需要を作る
               </h3>
               <p className="text-gray-300 text-sm leading-relaxed mb-4">
                 レセコン会社にとってAPI開放は「コストは確実、リターンは不確実」。彼らが動くのは、連携しないことが失注理由になる市場環境が整ったとき。
+                <span className="text-white font-semibold">日本最大の医療AI開発者コミュニティを先に構築し、レセコン会社がAPIを公開するメリットを明確にする</span>
+                ことで、この構造を突破する。
               </p>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4 mb-6">
                 {[
                   { label: "バイパス", desc: "レセコンデータに依存しない価値を先に作る（アンケート・研修起点）" },
                   { label: "手入力ブリッジ", desc: "月次手入力 → CSV → API と段階的に移行" },
@@ -533,6 +557,19 @@ export default function InvestorPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* The "only path" callout */}
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-5">
+                <p className="text-sm text-gray-200 leading-relaxed text-center">
+                  <span className="text-amber-400 font-bold text-base">AI開発者にとって、D-Codeは唯一の道になる</span>
+                  <br />
+                  <span className="text-gray-400 mt-2 inline-block">
+                    レセコンAPIが開放されたとき、それを利用できるのはD-Code Hub経由のみ。
+                    AI開発者がレセコンデータを活用した歯科アプリを作りたければ、D-Codeコミュニティに参加するしかない。
+                    この構造こそが、プラットフォームの最大の競争優位性となる。
+                  </span>
+                </p>
               </div>
             </div>
           </div>
