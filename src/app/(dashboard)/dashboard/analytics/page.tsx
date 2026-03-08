@@ -10,7 +10,7 @@ import { ROLES } from "@/lib/constants"
 import { getClinicPlanInfo, hasFeature } from "@/lib/plan"
 import { messages } from "@/lib/messages"
 
-const INITIAL_LIMIT = 20
+const INITIAL_LIMIT = 50
 
 export default async function AnalyticsPage() {
   const session = await auth()
