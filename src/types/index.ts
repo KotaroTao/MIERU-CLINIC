@@ -22,9 +22,9 @@ export interface ClinicSettings {
   postSurveyAction?: "none" | "line" // デフォルト: "none"
   lineUrl?: string // 医院LINE公式アカウントURL
   clinicHomepageUrl?: string // 医院ホームページURL（postSurveyActionとは独立して表示可能）
-  // AI Advisory トラッキング
-  advisoryThreshold?: number // アンロックに必要な回答数（デフォルト30）
-  responsesSinceLastAdvisory?: number // 最終分析以降の新規回答数
+  // Kawaii Teeth トラッキング（後方互換のため残す）
+  advisoryThreshold?: number
+  responsesSinceLastAdvisory?: number
   // 料金プラン
   plan?: PlanTier // デフォルト: "free"
   trialPlan?: PlanTier // トライアル中のプラン
