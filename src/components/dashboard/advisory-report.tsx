@@ -537,67 +537,68 @@ function DiscoveryOverlay({
   onClose: () => void
 }) {
   const [showAnalysis, setShowAnalysis] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(!!acquiredChar)
 
   const discovery = highlightSections.find((s) => s.type === "highlight_discovery")
   const strength = highlightSections.find((s) => s.type === "highlight_strength")
 
   const hasAnalysis = !!(discovery || strength)
 
+  // キャラもAI分析もない場合はオーバーレイ不要
+  if (!acquiredChar && !hasAnalysis) return null
+
+  // キャラなし＋分析ありの場合は直接AI分析を表示
+  const skipToAnalysis = !acquiredChar && hasAnalysis
+
+  function handleShowAnalysis() {
+    setShowConfetti(false)
+    setShowAnalysis(true)
+  }
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/70" />
 
-      <Confetti />
+      {showConfetti && <Confetti />}
 
       <div className="relative z-10 w-full max-w-sm">
-        {!showAnalysis ? (
+        {!showAnalysis && !skipToAnalysis ? (
           /* ── Kawaii Teeth 獲得演出 + AI分析ボタン ── */
           <div className="text-center animate-in fade-in-0 zoom-in-95 duration-500">
-            {/* Kawaii Teeth 獲得 */}
-            {acquiredChar ? (
-              <div className="mb-6">
-                <div className="inline-flex items-center gap-1 rounded-full bg-pink-500/20 px-3 py-1 text-xs font-bold text-pink-300 mb-4">
-                  🦷 {messages.advisory.kawaiiTeethLabel}
-                </div>
-                <div className="mx-auto w-32 h-32 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 p-1 shadow-2xl shadow-pink-500/30 mb-4">
-                  <div className="flex h-full w-full items-center justify-center rounded-xl bg-white">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={acquiredChar.character.imageData}
-                      alt={acquiredChar.character.name}
-                      className="h-24 w-24 rounded-lg object-contain"
-                    />
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold text-white">
-                  {acquiredChar.isNew && (
-                    <span className="text-yellow-400 mr-1">{messages.advisory.kawaiiTeethNew}</span>
-                  )}
-                  {acquiredChar.character.name}
-                  {!acquiredChar.isNew && (
-                    <span className="ml-1 text-sm text-white/60">x{acquiredChar.count}</span>
-                  )}
-                </h3>
-                <p className="mt-2 text-sm text-white/70 leading-relaxed">
-                  {acquiredChar.character.description}
-                </p>
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-1 rounded-full bg-pink-500/20 px-3 py-1 text-xs font-bold text-pink-300 mb-4">
+                🦷 {messages.advisory.kawaiiTeethLabel}
               </div>
-            ) : (
-              /* キャラなしの場合のタイトル */
-              <div className="mb-6">
-                <Sparkles className="mx-auto h-10 w-10 text-yellow-400 mb-3" />
-                <h2 className="text-xl font-bold text-white">
-                  {messages.advisory.discoveryOverlayTitle}
-                </h2>
+              <div className="mx-auto w-32 h-32 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 p-1 shadow-2xl shadow-pink-500/30 mb-4">
+                <div className="flex h-full w-full items-center justify-center rounded-xl bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={acquiredChar!.character.imageData}
+                    alt={acquiredChar!.character.name}
+                    className="h-24 w-24 rounded-lg object-contain"
+                  />
+                </div>
               </div>
-            )}
+              <h3 className="text-lg font-bold text-white">
+                {acquiredChar!.isNew && (
+                  <span className="text-yellow-400 mr-1">{messages.advisory.kawaiiTeethNew}</span>
+                )}
+                {acquiredChar!.character.name}
+                {!acquiredChar!.isNew && (
+                  <span className="ml-1 text-sm text-white/60">x{acquiredChar!.count}</span>
+                )}
+              </h3>
+              <p className="mt-2 text-sm text-white/70 leading-relaxed">
+                {acquiredChar!.character.description}
+              </p>
+            </div>
 
             {/* ボタンエリア */}
             <div className="space-y-3">
               {hasAnalysis && (
                 <button
                   type="button"
-                  onClick={() => setShowAnalysis(true)}
+                  onClick={handleShowAnalysis}
                   className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all"
                 >
                   <Brain className="h-4 w-4" />
