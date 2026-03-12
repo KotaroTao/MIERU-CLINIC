@@ -294,6 +294,7 @@ ${posComments}`
     return { output: parsed, error: null }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
+    console.error("[llm-advisory] LLM advisory call failed:", message)
     logger.error("LLM advisory call failed", { component: "llm-advisory", error: message })
     return { output: null, error: message }
   }
