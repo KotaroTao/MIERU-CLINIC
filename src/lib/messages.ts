@@ -330,8 +330,10 @@ export const messages = {
     discoveryLabel: "最大の発見",
     strengthLabel: "隠れた強み",
     kawaiiTeethLabel: "Kawaii Teeth Get!",
+    kawaiiTeethNew: "NEW!",
     flipToReveal: "タップしてめくる",
     viewFullReport: "レポート全文を見る",
+    viewAnalysisResult: "AI分析結果を見る",
     // クリニックストーリー
     clinicStoryTitle: "あなたのクリニックストーリー",
     // ワンクリック改善アクション

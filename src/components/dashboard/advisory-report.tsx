@@ -527,16 +527,6 @@ interface AcquiredCharacter {
   isNew: boolean
 }
 
-interface FlipCardData {
-  category: string
-  emoji: string
-  content: string
-  title: string
-  gradient: string
-  textColor: string
-  imageData?: string
-}
-
 function DiscoveryOverlay({
   highlightSections,
   acquiredChar,
@@ -546,66 +536,23 @@ function DiscoveryOverlay({
   acquiredChar: AcquiredCharacter | null
   onClose: () => void
 }) {
-  const [flipped, setFlipped] = useState<Set<number>>(new Set())
-  const [showConfetti, setShowConfetti] = useState(false)
+  const [showAnalysis, setShowAnalysis] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(!!acquiredChar)
 
   const discovery = highlightSections.find((s) => s.type === "highlight_discovery")
   const strength = highlightSections.find((s) => s.type === "highlight_strength")
 
-  const cards: FlipCardData[] = []
+  const hasAnalysis = !!(discovery || strength)
 
-  if (discovery) {
-    const lines = discovery.content.split("\n")
-    cards.push({
-      category: messages.advisory.discoveryLabel,
-      emoji: lines[0] || "🎯",
-      content: lines.slice(1).join("\n") || discovery.content,
-      title: discovery.title,
-      gradient: "from-blue-500 to-indigo-600",
-      textColor: "text-blue-800",
-    })
-  }
+  // キャラもAI分析もない場合はオーバーレイ不要
+  if (!acquiredChar && !hasAnalysis) return null
 
-  if (strength) {
-    const lines = strength.content.split("\n")
-    cards.push({
-      category: messages.advisory.strengthLabel,
-      emoji: lines[0] || "🌟",
-      content: lines.slice(1).join("\n") || strength.content,
-      title: strength.title,
-      gradient: "from-emerald-500 to-teal-600",
-      textColor: "text-emerald-800",
-    })
-  }
+  // キャラなし＋分析ありの場合は直接AI分析を表示
+  const skipToAnalysis = !acquiredChar && hasAnalysis
 
-  if (acquiredChar) {
-    cards.push({
-      category: messages.advisory.kawaiiTeethLabel,
-      emoji: "🦷",
-      content: acquiredChar.character.description,
-      title: acquiredChar.isNew
-        ? `NEW! ${acquiredChar.character.name}`
-        : `${acquiredChar.character.name} x${acquiredChar.count}`,
-      gradient: "from-pink-500 to-purple-600",
-      textColor: "text-pink-800",
-      imageData: acquiredChar.character.imageData,
-    })
-  }
-
-  if (cards.length === 0) return null
-
-  const totalCards = cards.length
-  const allFlipped = flipped.size >= totalCards
-
-  const handleFlip = (index: number) => {
-    setFlipped((prev) => {
-      const next = new Set(prev)
-      next.add(index)
-      if (next.size >= totalCards && !showConfetti) {
-        setShowConfetti(true)
-      }
-      return next
-    })
+  function handleShowAnalysis() {
+    setShowConfetti(false)
+    setShowAnalysis(true)
   }
 
   return createPortal(
@@ -614,110 +561,110 @@ function DiscoveryOverlay({
 
       {showConfetti && <Confetti />}
 
-      <div className="relative z-10 w-full max-w-lg">
-        {/* タイトル */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold text-white flex items-center justify-center gap-2">
-            <Sparkles className="h-5 w-5 text-yellow-400" />
-            {messages.advisory.discoveryOverlayTitle}
-          </h2>
-          <p className="mt-1 text-sm text-white/70">
-            {messages.advisory.discoveryOverlayDesc}
-          </p>
-        </div>
-
-        {/* カードグリッド */}
-        <div className={cn(
-          "grid gap-3",
-          totalCards === 3 ? "grid-cols-3" : totalCards === 2 ? "grid-cols-2" : "grid-cols-1"
-        )}>
-          {cards.map((card, i) => {
-            const isFlipped = flipped.has(i)
-
-            return (
-              <button
-                key={i}
-                type="button"
-                onClick={() => handleFlip(i)}
-                className="group"
-                style={{ perspective: "800px" }}
-              >
-                <div
-                  className="relative w-full transition-transform duration-700"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-                    minHeight: "180px",
-                  }}
-                >
-                  {/* Front (face-down) */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br p-4 shadow-lg",
-                      card.gradient,
-                      !isFlipped && "group-hover:scale-[1.02] transition-transform"
-                    )}
-                    style={{ backfaceVisibility: "hidden" }}
-                  >
-                    <span className="text-3xl mb-2">{card.emoji}</span>
-                    <span className="text-xs font-bold text-white/90 uppercase tracking-wider text-center">
-                      {card.category}
-                    </span>
-                    <span className="mt-2 text-[10px] text-white/60">
-                      {messages.advisory.flipToReveal}
-                    </span>
-                  </div>
-
-                  {/* Back (revealed) */}
-                  <div
-                    className="absolute inset-0 flex flex-col items-center justify-center rounded-xl border-2 bg-white p-4 shadow-lg"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      transform: "rotateY(180deg)",
-                    }}
-                  >
-                    {card.imageData ? (
-                      <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={card.imageData}
-                          alt={card.title}
-                          className="h-16 w-16 rounded-xl object-contain mb-2"
-                        />
-                        <h4 className="text-xs font-bold text-pink-600 text-center">{card.title}</h4>
-                        <p className="mt-1 text-[10px] text-muted-foreground text-center line-clamp-3">
-                          {card.content}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-xl mb-1">{card.emoji}</span>
-                        <h4 className={cn("text-xs font-bold text-center", card.textColor)}>
-                          {card.title}
-                        </h4>
-                        <p className="mt-1 text-[10px] text-muted-foreground text-center leading-relaxed line-clamp-4">
-                          {card.content}
-                        </p>
-                      </>
-                    )}
-                  </div>
+      <div className="relative z-10 w-full max-w-sm">
+        {!showAnalysis && !skipToAnalysis ? (
+          /* ── Kawaii Teeth 獲得演出 + AI分析ボタン ── */
+          <div className="text-center animate-in fade-in-0 zoom-in-95 duration-500">
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-1 rounded-full bg-pink-500/20 px-3 py-1 text-xs font-bold text-pink-300 mb-4">
+                🦷 {messages.advisory.kawaiiTeethLabel}
+              </div>
+              <div className="mx-auto w-32 h-32 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 p-1 shadow-2xl shadow-pink-500/30 mb-4">
+                <div className="flex h-full w-full items-center justify-center rounded-xl bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={acquiredChar!.character.imageData}
+                    alt={acquiredChar!.character.name}
+                    className="h-24 w-24 rounded-lg object-contain"
+                  />
                 </div>
-              </button>
-            )
-          })}
-        </div>
+              </div>
+              <h3 className="text-lg font-bold text-white">
+                {acquiredChar!.isNew && (
+                  <span className="text-yellow-400 mr-1">{messages.advisory.kawaiiTeethNew}</span>
+                )}
+                {acquiredChar!.character.name}
+                {!acquiredChar!.isNew && (
+                  <span className="ml-1 text-sm text-white/60">x{acquiredChar!.count}</span>
+                )}
+              </h3>
+              <p className="mt-2 text-sm text-white/70 leading-relaxed">
+                {acquiredChar!.character.description}
+              </p>
+            </div>
 
-        {/* 全カードめくった後のボタン */}
-        {allFlipped && (
-          <div className="mt-6 text-center animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-purple-700 shadow-lg hover:bg-purple-50 transition-colors"
-            >
-              {messages.advisory.viewFullReport}
-              <ArrowRight className="h-4 w-4" />
-            </button>
+            {/* ボタンエリア */}
+            <div className="space-y-3">
+              {hasAnalysis && (
+                <button
+                  type="button"
+                  onClick={handleShowAnalysis}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all"
+                >
+                  <Brain className="h-4 w-4" />
+                  {messages.advisory.viewAnalysisResult}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-6 py-3 text-sm font-medium text-white/80 hover:bg-white/20 transition-colors"
+              >
+                {messages.advisory.viewFullReport}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ── AI分析結果表示 ── */
+          <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+            <div className="text-center mb-5">
+              <h2 className="text-xl font-bold text-white flex items-center justify-center gap-2">
+                <Sparkles className="h-5 w-5 text-yellow-400" />
+                {messages.advisory.discoveryOverlayTitle}
+              </h2>
+            </div>
+
+            <div className="space-y-3">
+              {discovery && (
+                <div className="rounded-xl border-2 bg-white p-4 shadow-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-700">
+                      {messages.advisory.discoveryLabel}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-blue-800 mb-1">{discovery.title}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+                    {discovery.content.split("\n").slice(1).join("\n") || discovery.content}
+                  </p>
+                </div>
+              )}
+
+              {strength && (
+                <div className="rounded-xl border-2 bg-white p-4 shadow-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                      {messages.advisory.strengthLabel}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-emerald-800 mb-1">{strength.title}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+                    {strength.content.split("\n").slice(1).join("\n") || strength.content}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-5 text-center">
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-purple-700 shadow-lg hover:bg-purple-50 transition-colors"
+              >
+                {messages.advisory.viewFullReport}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
