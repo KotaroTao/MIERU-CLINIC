@@ -189,7 +189,7 @@ export async function generateLLMAdvisory(
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return { output: null, error: null } // キー未設定はエラーではない
 
-  // Per-clinic rate limit check
+  // Per-clinic rate limit check（デモクリニックはスキップ可能）
   if (clinicId && !options?.skipRateLimit) {
     const lastCall = lastCallByClinic.get(clinicId)
     if (lastCall && Date.now() - lastCall < RATE_LIMIT_MS) {
