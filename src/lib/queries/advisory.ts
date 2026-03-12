@@ -2208,11 +2208,11 @@ async function runLLMAnalysis(
       return llmOutputToSections(result.output)
     }
     if (result.error) {
-      // エラーをセクションとしてユーザーに通知
+      // エラーをセクションとしてユーザーに通知（typeをsummaryにしてLLM成功と誤判定させない）
       return [{
         title: "AI分析",
         content: `AI分析を実行できませんでした。ルールベースの分析結果をご確認ください。\n- エラー: ${result.error}`,
-        type: "executive_summary" as const,
+        type: "summary" as const,
       }]
     }
     return [] // APIキー未設定 → サイレントスキップ
@@ -2221,7 +2221,7 @@ async function runLLMAnalysis(
     return [{
       title: "AI分析",
       content: "AI分析中に予期しないエラーが発生しました。ルールベースの分析結果をご確認ください。",
-      type: "executive_summary" as const,
+      type: "summary" as const,
     }]
   }
 }

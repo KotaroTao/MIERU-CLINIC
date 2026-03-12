@@ -3,14 +3,15 @@ import { z } from "zod"
 import type { AdvisorySection } from "@/types"
 import { logger } from "@/lib/logger"
 
-// ─── LLM Advisory Engine ───
-// 定量データ + ルールベース分析結果を LLM に渡し、
-// AIコンサルタントとしてレポート全体を生成する。
+// ─── LLM Advisory Engine（並列分割版） ───
+// 7セクションを3つの並列LLM呼び出しに分割し、生成時間を約1/3に短縮。
+// Call A: clinicStory + highlightCards + executiveSummary（要約・クリエイティブ系）
+// Call B: rootCauseAnalysis + strategicActions（分析・提案系）
+// Call C: staffInsights + segmentInsights（データ特化系）
 
 const MODEL = "claude-sonnet-4-6"
-const MAX_TOKENS = 5000
-const TIMEOUT_MS = 90_000 // 90秒（5000トークン出力 + 高負荷時マージン、Cloud Run 120秒以内）
-const MAX_INPUT_CHARS = 20_000 // 入力テキストの上限（約5,000トークン相当、応答速度改善のため縮小）
+const TIMEOUT_MS = 60_000 // 60秒（各呼び出し最大2000トークン、十分なマージン）
+const MAX_INPUT_CHARS = 20_000 // 入力テキストの上限（約5,000トークン相当）
 const RATE_LIMIT_MS = 60 * 60 * 1000 // 同一クリニック1時間に1回まで
 
 /** Per-clinic rate limit tracker (in-memory, resets on server restart) */
@@ -64,32 +65,23 @@ export interface LLMAdvisoryResult {
   error: string | null
 }
 
-const SYSTEM_PROMPT = `あなたは歯科医院経営に精通したトップコンサルタントです。
+// ─── 共通のコンサルタントペルソナ ───
+const PERSONA = `あなたは歯科医院経営に精通したトップコンサルタントです。
 20年以上の歯科コンサルティング経験を持ち、延べ500院以上の改善実績があります。
-
-## あなたの役割
 院長の「専属AIコンサルタント」として、データから読み取れる洞察を分かりやすく伝えます。
 単なるデータの羅列ではなく、**なぜそうなっているのか**、**何をすべきか**を具体的に助言してください。
+簡潔に書く。各セクションは要点のみ。冗長な前置きや繰り返しは不要。`
 
-## あなたの分析スタイル
-- データの表面的な記述ではなく、**因果関係の推論**と**具体的な打ち手**を示す
-- 複数のデータポイントを**クロスリファレンス**して根本原因を特定する
-- 推奨アクションには「何を」「どのように」「いつまでに」「期待効果」を含める
-- 院長が朝礼で即座にスタッフに伝えられるレベルの具体性で書く
-- 改善の優先順位は「患者体験への影響度 × 実行の容易さ」で判断する
-- **簡潔に書く**。各セクションは要点のみ。冗長な前置きや繰り返しは不要
+// ─── Call A: 要約・クリエイティブ系 ───
+const SYSTEM_PROMPT_A = `${PERSONA}
 
 ## 出力形式
-JSON形式で以下の7セクションを返してください。マークダウンコードブロックは不要です。
+JSON形式で以下の3セクションを返してください。マークダウンコードブロックは不要です。
 
 {
   "clinicStory": "...",
   "highlightCards": [...],
-  "executiveSummary": "...",
-  "rootCauseAnalysis": "...",
-  "strategicActions": "...",
-  "staffInsights": "...",
-  "segmentInsights": "..."
+  "executiveSummary": "..."
 }
 
 ### clinicStory（クリニックストーリー）
@@ -108,7 +100,25 @@ JSON形式で以下の7セクションを返してください。マークダウ
 ### executiveSummary（エグゼクティブサマリー）
 - 3〜5文で経営者向けの要約を書く
 - 最も重要な発見 → 最大のリスク → 最優先アクションの順
-- 数値を必ず含める
+- 数値を必ず含める`
+
+// ─── Call B: 分析・提案系 ───
+const SYSTEM_PROMPT_B = `${PERSONA}
+
+## あなたの分析スタイル
+- データの表面的な記述ではなく、**因果関係の推論**と**具体的な打ち手**を示す
+- 複数のデータポイントを**クロスリファレンス**して根本原因を特定する
+- 推奨アクションには「何を」「どのように」「いつまでに」「期待効果」を含める
+- 院長が朝礼で即座にスタッフに伝えられるレベルの具体性で書く
+- 改善の優先順位は「患者体験への影響度 × 実行の容易さ」で判断する
+
+## 出力形式
+JSON形式で以下の2セクションを返してください。マークダウンコードブロックは不要です。
+
+{
+  "rootCauseAnalysis": "...",
+  "strategicActions": "..."
+}
 
 ### rootCauseAnalysis（根本原因分析）
 - 表面的な問題から根本原因への因果チェーンを示す
@@ -123,7 +133,18 @@ JSON形式で以下の7セクションを返してください。マークダウ
   具体策: ○○を△△に変更する
   期待効果: スコアが□□pt改善（根拠: 他の分析データから）
   測定方法: 1ヶ月後に○○のスコアを確認
-- 改善アクション管理で追跡可能な粒度で書く
+- 改善アクション管理で追跡可能な粒度で書く`
+
+// ─── Call C: データ特化系 ───
+const SYSTEM_PROMPT_C = `${PERSONA}
+
+## 出力形式
+JSON形式で以下の2セクションを返してください。マークダウンコードブロックは不要です。
+
+{
+  "staffInsights": "...",
+  "segmentInsights": "..."
+}
 
 ### staffInsights（スタッフ別分析）
 - スタッフごとの傾向と具体的なアドバイスを書く
@@ -146,20 +167,26 @@ JSON形式で以下の7セクションを返してください。マークダウ
 
 /** Zod schema for highlight card */
 const highlightCardSchema = z.object({
-  title: z.coerce.string().default(""),
-  content: z.coerce.string().default(""),
-  emoji: z.coerce.string().default(""),
+  title: z.coerce.string().catch(""),
+  content: z.coerce.string().catch(""),
+  emoji: z.coerce.string().catch(""),
 })
 
-/** Zod schema for LLM advisory output */
-const llmAdvisoryOutputSchema = z.object({
-  executiveSummary: z.coerce.string().default(""),
-  rootCauseAnalysis: z.coerce.string().default(""),
-  strategicActions: z.coerce.string().default(""),
-  clinicStory: z.coerce.string().default(""),
-  highlightCards: z.array(highlightCardSchema).default([]),
-  staffInsights: z.coerce.string().default(""),
-  segmentInsights: z.coerce.string().default(""),
+/** Zod schemas for each parallel call */
+const schemaA = z.object({
+  clinicStory: z.coerce.string().catch(""),
+  highlightCards: z.array(highlightCardSchema).catch([]),
+  executiveSummary: z.coerce.string().catch(""),
+})
+
+const schemaB = z.object({
+  rootCauseAnalysis: z.coerce.string().catch(""),
+  strategicActions: z.coerce.string().catch(""),
+})
+
+const schemaC = z.object({
+  staffInsights: z.coerce.string().catch(""),
+  segmentInsights: z.coerce.string().catch(""),
 })
 
 /**
@@ -208,27 +235,9 @@ function truncateRuleSummary(sections: Array<{ title: string; content: string }>
 }
 
 /**
- * LLM を使ってコンサルタント品質の分析を生成する。
- * ANTHROPIC_API_KEY が未設定の場合は error を返す。
+ * 入力データからユーザーメッセージを構築する（3つの並列呼び出しで共有）。
  */
-export async function generateLLMAdvisory(
-  input: LLMAdvisoryInput,
-  clinicId?: string,
-  options?: { skipRateLimit?: boolean },
-): Promise<LLMAdvisoryResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return { output: null, error: null } // キー未設定はエラーではない
-
-  // Per-clinic rate limit check（デモクリニックはスキップ可能）
-  if (clinicId && !options?.skipRateLimit) {
-    const lastCall = lastCallByClinic.get(clinicId)
-    if (lastCall && Date.now() - lastCall < RATE_LIMIT_MS) {
-      return { output: null, error: "レート制限: 次の分析は1時間後に実行できます" }
-    }
-  }
-
-  const client = new Anthropic({ apiKey, timeout: TIMEOUT_MS })
-
+function buildUserMessage(input: LLMAdvisoryInput): string {
   // ルールベース分析の要約を構築（上限付き）
   const ruleSummary = truncateRuleSummary(input.ruleBasedSections, MAX_INPUT_CHARS)
 
@@ -273,7 +282,7 @@ export async function generateLLMAdvisory(
     ? input.positiveComments.map((c) => `- 「${sanitizeComment(c)}」`).join("\n")
     : "なし"
 
-  const userMessage = `以下のデータに基づいて、歯科医院の経営改善分析を行ってください。
+  return `以下のデータに基づいて、歯科医院の経営改善分析を行ってください。
 
 ## 基本データ
 - 総合満足度: ${input.averageScore.toFixed(2)}点${input.prevAverageScore != null ? ` (前月: ${input.prevAverageScore.toFixed(2)}点)` : ""}
@@ -302,26 +311,111 @@ ${negComments}
 
 ## ポジティブコメント（直近、最大5件）
 ${posComments}`
+}
+
+type CallAOutput = { clinicStory: string; highlightCards: Array<{ title: string; content: string; emoji: string }>; executiveSummary: string }
+type CallBOutput = { rootCauseAnalysis: string; strategicActions: string }
+type CallCOutput = { staffInsights: string; segmentInsights: string }
+
+/**
+ * 単一のLLM呼び出しを実行し、JSONをパースして返す。
+ */
+async function callLLM<T>(
+  client: Anthropic,
+  systemPrompt: string,
+  userMessage: string,
+  schema: z.ZodType<T>,
+  maxTokens: number,
+  label: string,
+): Promise<T> {
+  const response = await client.messages.create({
+    model: MODEL,
+    max_tokens: maxTokens,
+    system: systemPrompt,
+    messages: [{ role: "user", content: userMessage }],
+  })
+
+  const text = response.content
+    .filter((b): b is Anthropic.TextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("")
+
+  const jsonStr = extractJson(text)
+  const parsed = schema.parse(JSON.parse(jsonStr))
+  logger.info(`LLM call ${label} completed`, {
+    component: "llm-advisory",
+    inputTokens: response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+  })
+  return parsed
+}
+
+/**
+ * LLM を使ってコンサルタント品質の分析を生成する（3並列呼び出し版）。
+ * ANTHROPIC_API_KEY が未設定の場合は error を返す。
+ */
+export async function generateLLMAdvisory(
+  input: LLMAdvisoryInput,
+  clinicId?: string,
+  options?: { skipRateLimit?: boolean },
+): Promise<LLMAdvisoryResult> {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return { output: null, error: null } // キー未設定はエラーではない
+
+  // Per-clinic rate limit check（デモクリニックはスキップ可能）
+  if (clinicId && !options?.skipRateLimit) {
+    const lastCall = lastCallByClinic.get(clinicId)
+    if (lastCall && Date.now() - lastCall < RATE_LIMIT_MS) {
+      return { output: null, error: "レート制限: 次の分析は1時間後に実行できます" }
+    }
+  }
+
+  const client = new Anthropic({ apiKey, timeout: TIMEOUT_MS })
+  const userMessage = buildUserMessage(input)
 
   try {
-    const response = await client.messages.create({
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userMessage }],
-    })
+    // 3つの並列LLM呼び出し
+    const [resultA, resultB, resultC] = await Promise.allSettled([
+      callLLM<CallAOutput>(client, SYSTEM_PROMPT_A, userMessage, schemaA as z.ZodType<CallAOutput>, 2000, "A(summary)"),
+      callLLM<CallBOutput>(client, SYSTEM_PROMPT_B, userMessage, schemaB as z.ZodType<CallBOutput>, 2000, "B(analysis)"),
+      callLLM<CallCOutput>(client, SYSTEM_PROMPT_C, userMessage, schemaC as z.ZodType<CallCOutput>, 1500, "C(segments)"),
+    ])
 
-    const text = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
-      .join("")
+    // Call A（要約系）が失敗した場合は全体失敗とみなす
+    if (resultA.status === "rejected") {
+      const message = resultA.reason instanceof Error ? resultA.reason.message : String(resultA.reason)
+      console.error("[llm-advisory] Call A (summary) failed:", message)
+      logger.error("LLM call A failed", { component: "llm-advisory", error: message })
+      return { output: null, error: message }
+    }
 
-    // JSON パース + Zod バリデーション（コードブロックや前後テキストに対応）
-    const jsonStr = extractJson(text)
-    const parsed = llmAdvisoryOutputSchema.parse(JSON.parse(jsonStr))
+    const a = resultA.value
+
+    // Call B/C は部分的失敗を許容（そのセクションが空になるだけ）
+    const b: CallBOutput = resultB.status === "fulfilled" ? resultB.value : { rootCauseAnalysis: "", strategicActions: "" }
+    const c: CallCOutput = resultC.status === "fulfilled" ? resultC.value : { staffInsights: "", segmentInsights: "" }
+
+    if (resultB.status === "rejected") {
+      const msg = resultB.reason instanceof Error ? resultB.reason.message : String(resultB.reason)
+      logger.warn("LLM call B (analysis) failed, using empty fallback", { component: "llm-advisory", error: msg })
+    }
+    if (resultC.status === "rejected") {
+      const msg = resultC.reason instanceof Error ? resultC.reason.message : String(resultC.reason)
+      logger.warn("LLM call C (segments) failed, using empty fallback", { component: "llm-advisory", error: msg })
+    }
+
+    const output: LLMAdvisoryOutput = {
+      clinicStory: a.clinicStory,
+      highlightCards: a.highlightCards,
+      executiveSummary: a.executiveSummary,
+      rootCauseAnalysis: b.rootCauseAnalysis,
+      strategicActions: b.strategicActions,
+      staffInsights: c.staffInsights,
+      segmentInsights: c.segmentInsights,
+    }
 
     if (clinicId) lastCallByClinic.set(clinicId, Date.now())
-    return { output: parsed, error: null }
+    return { output, error: null }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
     console.error("[llm-advisory] LLM advisory call failed:", message)
