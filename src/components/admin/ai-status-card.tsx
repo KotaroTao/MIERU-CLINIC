@@ -44,9 +44,11 @@ export function AIStatusCard() {
       const res = await fetch("/api/admin/ai-status")
       if (res.ok) {
         setStatus(await res.json())
+      } else {
+        setFeedback({ type: "error", text: m.checkFailed })
       }
     } catch {
-      // silent
+      setFeedback({ type: "error", text: m.checkFailed })
     } finally {
       setLoading(false)
     }
@@ -75,10 +77,10 @@ export function AIStatusCard() {
       })
       const data = await res.json()
       if (res.ok) {
+        setStatus(data)
         setFeedback({ type: "success", text: data.message || m.keyUpdated })
         setApiKey("")
         setShowKeyInput(false)
-        await fetchStatus()
       } else {
         setFeedback({ type: "error", text: data.error || m.invalidKey })
       }

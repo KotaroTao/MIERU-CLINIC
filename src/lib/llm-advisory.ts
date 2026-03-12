@@ -301,14 +301,15 @@ ${posComments}`
 /**
  * Anthropic API の接続状態を確認する。
  * 軽量なリクエスト（max_tokens=1）で疎通テストを行う。
+ * @param overrideApiKey 指定時は process.env ではなくこのキーでテストする
  */
-export async function checkLLMStatus(): Promise<{
+export async function checkLLMStatus(overrideApiKey?: string): Promise<{
   configured: boolean
   connected: boolean
   model: string
   error: string | null
 }> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = overrideApiKey ?? process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     return { configured: false, connected: false, model: MODEL, error: null }
   }

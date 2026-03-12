@@ -13,13 +13,12 @@ export async function GET() {
   const authResult = await requireRole("system_admin")
   if (isAuthError(authResult)) return authResult
 
-  const status = await checkLLMStatus()
-
-  // 直近のAI分析レポート情報を取得
-  const [latestReport, totalReports] = await Promise.all([
+  // API疎通テストとDB集計を並列実行
+  const [status, latestReport, totalReports] = await Promise.all([
+    checkLLMStatus(),
     prisma.advisoryReport.findFirst({
       orderBy: { generatedAt: "desc" },
-      select: { generatedAt: true, clinicId: true, triggerType: true },
+      select: { generatedAt: true, triggerType: true },
     }),
     prisma.advisoryReport.count(),
   ])
@@ -60,21 +59,19 @@ export async function POST(request: NextRequest) {
     return errorResponse(messages.apiErrors.invalidRequest, 400)
   }
 
-  // APIキーをランタイムで設定
-  process.env.ANTHROPIC_API_KEY = parsed.data.apiKey
-
-  // 設定後に接続テストを実行
-  const status = await checkLLMStatus()
+  // 先にキーの有効性をテスト（process.env を変更せずに検証）
+  const status = await checkLLMStatus(parsed.data.apiKey)
 
   if (!status.connected) {
-    // 無効なキーだった場合はロールバック
-    delete process.env.ANTHROPIC_API_KEY
     return errorResponse(
       messages.admin.aiStatus.invalidKey,
       400,
       { detail: status.error },
     )
   }
+
+  // 有効なキーの場合のみ process.env に反映
+  process.env.ANTHROPIC_API_KEY = parsed.data.apiKey
 
   return successResponse({
     ...status,
