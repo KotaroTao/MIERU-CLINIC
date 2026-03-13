@@ -413,9 +413,9 @@ export default function HomePage() {
                     </div>
                     <div className="space-y-2">
                       <div className="rounded-xl bg-purple-50 p-3">
-                        <p className="text-[10px] font-semibold text-purple-700 mb-1">🔥 連続ストリーク</p>
+                        <p className="text-[10px] font-semibold text-purple-700 mb-1">⚡ ランクシステム</p>
                         <p className="text-[10px] text-purple-600">
-                          14日連続達成中！ゴールドランクまであと12件
+                          現在ゴールドランク！プラチナまであと12件
                         </p>
                       </div>
                       <div className="rounded-xl bg-pink-50 p-3">
