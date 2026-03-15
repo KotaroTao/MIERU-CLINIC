@@ -83,6 +83,7 @@ jobs:
             --timeout 120 \
             --service-account "cloud-run-mieru@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
             --add-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION }} \
+            --clear-vpc-connector \
             --network "default" \
             --subnet "default" \
             --vpc-egress "private-ranges-only" \
