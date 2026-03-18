@@ -4,7 +4,6 @@ import { successResponse, errorResponse } from "@/lib/api-helpers"
 import { startTrial, getClinicPlanInfo, canStartTrial as checkCanStartTrial } from "@/lib/plan"
 import { prisma } from "@/lib/prisma"
 import { messages } from "@/lib/messages"
-import { PLAN_ORDER } from "@/lib/constants"
 import type { ClinicSettings, PlanTier } from "@/types"
 
 /** トライアル開始 */
@@ -25,7 +24,8 @@ export async function POST(request: NextRequest) {
   }
 
   const targetPlan = body.plan as PlanTier | undefined
-  if (!targetPlan || !PLAN_ORDER.includes(targetPlan)) {
+  // トライアルは standard のみ
+  if (targetPlan !== "standard") {
     return errorResponse(messages.errors.invalidInput, 400)
   }
 

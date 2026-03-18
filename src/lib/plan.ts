@@ -55,13 +55,13 @@ export function getTrialDaysRemaining(settings: ClinicSettings): number | null {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }
 
-/** トライアル開始可能か（未使用の場合のみ） */
+/** トライアル開始可能か（free プランかつ未使用の場合のみ） */
 export function canStartTrial(settings: ClinicSettings): boolean {
   if (settings.trialUsed) return false
   if (isTrialActive(settings)) return false
-  // enterprise は既に最上位
+  // トライアルは free → standard のみ
   const basePlan = getClinicPlan(settings)
-  return basePlan !== "enterprise"
+  return basePlan === "free"
 }
 
 /** 次のアップグレード先プランを返す */
@@ -71,10 +71,10 @@ export function getNextPlan(currentPlan: PlanTier): PlanTier | null {
   return PLAN_ORDER[idx + 1]
 }
 
-/** トライアル対象プランを返す（現在のプランの1つ上） */
+/** トライアル対象プランを返す（free → standard のみ） */
 export function getTrialTargetPlan(settings: ClinicSettings): PlanTier | null {
   if (!canStartTrial(settings)) return null
-  return getNextPlan(getClinicPlan(settings))
+  return "standard"
 }
 
 /** クリニックのプラン情報を取得 */
