@@ -7,16 +7,11 @@ import {
   Settings,
   Target,
   FileBarChart,
-  Smartphone,
   ArrowRight,
-  Star,
-  MessageSquare,
-  Trophy,
-  Flame,
   CheckCircle2,
   AlertCircle,
   HelpCircle,
-  Lock,
+  Crown,
   Wrench,
 } from "lucide-react"
 
@@ -75,7 +70,6 @@ function TipBox({ children }: { children: React.ReactNode }) {
 const tocItems = [
   { id: "overview", label: "サービス概要" },
   { id: "survey", label: "アンケートの実施" },
-  { id: "dashboard-staff", label: "スタッフダッシュボード" },
   { id: "dashboard-admin", label: "管理者ダッシュボード" },
   { id: "analytics", label: "満足度レポート" },
   { id: "actions", label: "改善アクション" },
@@ -133,7 +127,7 @@ export default function GuidePage() {
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   MIERU Clinic は、歯科医院専用の患者満足度向上プラットフォームです。
-                  患者さまにタブレットでアンケートに回答いただき、その結果をリアルタイムで分析・可視化します。
+                  患者さまにタブレット（iPad等）でアンケートに回答いただき、その結果をリアルタイムで分析・可視化します。
                 </p>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {[
@@ -156,32 +150,35 @@ export default function GuidePage() {
               <SectionTitle id="survey" number={2} title="アンケートの実施" icon={Tablet} />
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  アンケートは「医院端末モード」で実施します。受付のタブレット（iPad等）で
-                  患者さまに回答いただきます。
+                  医院のタブレット（iPad等）で患者さまに回答いただきます。
                 </p>
 
                 <h3 className="text-base font-semibold mt-6 mb-3">医院端末でのアンケート手順</h3>
                 <div className="space-y-3">
                   <StepCard step={1} title="アンケート画面を開く">
-                    ダッシュボードのサイドバーにある「アンケート（医院端末）」ボタンをタップするか、
-                    ブックマークしたアンケートURLを開きます。
+                    ダッシュボードまたはサイドバーにある「アンケート（医院端末）」ボタンをタップして、アンケートURLを開きます。
                   </StepCard>
                   <StepCard step={2} title="患者属性を入力">
                     来院種別（初診/再診）、診療区分（保険/自費）、診療内容、年代、性別を選択します。
                     来院種別に応じたアンケートテンプレートが自動で選ばれます。
                   </StepCard>
                   <StepCard step={3} title="患者さまに端末を渡す">
-                    「アンケートを始める」ボタンが表示されたら、患者さまにタブレットを渡します。
+                    「アンケートを始める」ボタンを押してアンケート画面が表示されたら、患者さまにタブレットを渡します。
                   </StepCard>
                   <StepCard step={4} title="患者さまが回答">
                     各質問に5段階（星）で評価いただきます。最後にフリーテキスト欄（任意）もあります。
                     約30秒で完了します。
                   </StepCard>
-                  <StepCard step={5} title="自動リセット">
+                  <StepCard step={5} title="回答完了">
                     回答完了後、サンクスページと歯の豆知識が表示されます。
-                    一定時間後に自動的に次の患者さまの入力画面に戻ります。
+                    医院LINEを登録している場合は、友達追加QRコードが表示されます（任意）。
                   </StepCard>
                 </div>
+
+                <TipBox>
+                  アンケートのお願いは会計時に、「会計をお待ちの間に、アンケートのご協力をお願いします」とタブレットをお渡しするのがスムーズです。
+                  アンケートお願いする際のコツは、「すべての患者様に（アンケートを）お願いするのが当たり前」というスタンスで臨むことです。
+                </TipBox>
 
                 <TipBox>
                   担当スタッフが選択されている場合、そのスタッフの回答数としてカウントされます。
@@ -190,72 +187,13 @@ export default function GuidePage() {
               </div>
             </section>
 
-            {/* 3. スタッフダッシュボード */}
+            {/* 3. 管理者ダッシュボード */}
             <section>
-              <SectionTitle id="dashboard-staff" number={3} title="スタッフダッシュボード" icon={Trophy} />
+              <SectionTitle id="dashboard-admin" number={3} title="管理者ダッシュボード" icon={BarChart3} />
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  ダッシュボードのホーム画面では、今日の実績やモチベーションを高めるゲーミフィケーション要素が表示されます。
-                </p>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border bg-card p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Star className="h-4 w-4 text-amber-500" />
-                      <h4 className="text-sm font-semibold">ハピネスメーター</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      今日の平均スコアを絵文字で表示。一目で患者さまの満足度がわかります。
-                    </p>
-                  </div>
-                  <div className="rounded-lg border bg-card p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Target className="h-4 w-4 text-blue-500" />
-                      <h4 className="text-sm font-semibold">日次目標</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      1日のアンケート目標件数。達成するとConfettiアニメーションで祝福されます。
-                    </p>
-                  </div>
-                  <div className="rounded-lg border bg-card p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Flame className="h-4 w-4 text-orange-500" />
-                      <h4 className="text-sm font-semibold">連続ストリーク</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      目標を連続達成した日数。休診日は自動スキップされます。3日/7日/14日/30日/60日/90日でバッジ獲得。
-                    </p>
-                  </div>
-                  <div className="rounded-lg border bg-card p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Trophy className="h-4 w-4 text-purple-500" />
-                      <h4 className="text-sm font-semibold">ランクシステム</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      通算回答数に応じた8段階ランク（ルーキー→レジェンド）。積み重ねが可視化されます。
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border bg-card p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MessageSquare className="h-4 w-4 text-emerald-500" />
-                    <h4 className="text-sm font-semibold">患者の声</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    フリーテキストで寄せられた患者さまの声が表示されます。良いフィードバックはモチベーションに、
-                    改善点は具体的なアクションのヒントになります。
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* 4. 管理者ダッシュボード */}
-            <section>
-              <SectionTitle id="dashboard-admin" number={4} title="管理者ダッシュボード" icon={BarChart3} />
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  管理者（clinic_admin）がアクセスできる追加機能です。サイドバーから各ページに移動できます。
+                  オーナー権限でログインしたアカウントがアクセスできる追加機能です。サイドバーから各ページに移動できます。
+                  スタッフ権限のアカウントは、ダッシュボードのホーム画面のみ閲覧可能です。
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -272,7 +210,7 @@ export default function GuidePage() {
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 font-medium text-foreground">経営レポート</td>
-                        <td className="py-2">来院数・売上・自費率からKPIを自動算出</td>
+                        <td className="py-2">来院数・売上・自費率からKPIを自動算出（オーナー限定）</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 font-medium text-foreground">改善アクション</td>
@@ -280,11 +218,11 @@ export default function GuidePage() {
                       </tr>
                       <tr className="border-b">
                         <td className="py-2 font-medium text-foreground">スタッフ管理</td>
-                        <td className="py-2">スタッフの追加・編集・有効/無効切替</td>
+                        <td className="py-2">スタッフの追加・編集・有効/無効切替、ログインアカウント発行</td>
                       </tr>
                       <tr>
                         <td className="py-2 font-medium text-foreground">設定</td>
-                        <td className="py-2">クリニック名、営業日、定休日、アンケート完了後の設定</td>
+                        <td className="py-2">クリニック名、診療科目、定休日、アンケート完了後の誘導設定</td>
                       </tr>
                     </tbody>
                   </table>
@@ -292,9 +230,9 @@ export default function GuidePage() {
               </div>
             </section>
 
-            {/* 5. 満足度レポート */}
+            {/* 4. 満足度レポート */}
             <section>
-              <SectionTitle id="analytics" number={5} title="満足度レポート" icon={BarChart3} />
+              <SectionTitle id="analytics" number={4} title="満足度レポート" icon={BarChart3} />
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   患者満足度を多角的に分析できるレポート画面です。
@@ -324,9 +262,9 @@ export default function GuidePage() {
               </div>
             </section>
 
-            {/* 6. 改善アクション */}
+            {/* 5. 改善アクション */}
             <section>
-              <SectionTitle id="actions" number={6} title="改善アクション" icon={Target} />
+              <SectionTitle id="actions" number={5} title="改善アクション" icon={Target} />
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   分析結果をもとに、具体的な改善施策を登録・管理できます。
@@ -352,9 +290,9 @@ export default function GuidePage() {
               </div>
             </section>
 
-            {/* 7. 経営レポート */}
+            {/* 6. 経営レポート */}
             <section>
-              <SectionTitle id="metrics" number={7} title="経営レポート" icon={FileBarChart} />
+              <SectionTitle id="metrics" number={6} title="経営レポート" icon={FileBarChart} />
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   月次の来院数・売上・自費率を入力することで、患者満足度と経営指標の相関を分析できます。
@@ -379,36 +317,43 @@ export default function GuidePage() {
                 </p>
 
                 <h3 className="text-base font-semibold mt-6 mb-3 flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-violet-500" />
-                  PINロック機能
+                  <Crown className="h-4 w-4 text-amber-500" />
+                  閲覧権限（オーナー限定）
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  経営レポートは機密性の高いデータを含むため、4桁のPINで保護できます。
-                  1つのアカウントを医院全体で共有している場合でも、院長のみが経営データを閲覧可能になります。
+                  経営レポートは機密性の高いデータを含むため、<strong>クリニックのオーナーアカウントのみが閲覧可能</strong>です。
+                  同じ医院のスタッフ権限のログインアカウントでは経営レポートにアクセスできません。
+                  これにより、1つのダッシュボードを複数のスタッフで利用する場合でも、院長（オーナー）のみが経営データを確認できます。
                 </p>
-                <div className="space-y-3">
-                  <StepCard step={1} title="PINを設定する">
-                    設定ページの「経営レポートのPINロック」から4桁の数字を設定します。
-                    初回は誰でも設定でき、変更・解除には現在のPINが必要です。
-                  </StepCard>
-                  <StepCard step={2} title="経営レポートにアクセス">
-                    PIN設定後、経営レポートを開くとPIN入力画面が表示されます。
-                    正しいPINを入力するとそのタブ内では再入力不要です。
-                  </StepCard>
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <h4 className="text-sm font-semibold mb-2">権限の仕組み</h4>
+                  <ul className="space-y-1.5 text-xs text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <Crown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      <span><strong className="text-foreground">オーナー</strong>：経営レポート・設定・スタッフ管理を含むすべての機能にアクセス可能</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Users className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500" />
+                      <span><strong className="text-foreground">スタッフ</strong>：ダッシュボードのホーム画面（日次実績・ゲーミフィケーション）のみ閲覧可能</span>
+                    </li>
+                  </ul>
                 </div>
                 <TipBox>
-                  PINを忘れた場合は、MIERU Clinic運営にお問い合わせください。管理者がリセットできます。
+                  オーナー権限の付与・変更は、スタッフ管理画面から行えます。旧バージョンにあった「4桁PINロック」機能は廃止され、
+                  アカウント単位のロール（オーナー／スタッフ）で権限を分離する仕組みに変わりました。
                 </TipBox>
               </div>
             </section>
 
-            {/* 8. スタッフ管理 */}
+            {/* 7. スタッフ管理 */}
             <section>
-              <SectionTitle id="staff" number={8} title="スタッフ管理" icon={Users} />
+              <SectionTitle id="staff" number={7} title="スタッフ管理" icon={Users} />
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  スタッフの登録・編集・有効/無効の切替ができます。
+                  スタッフの登録・編集・有効/無効の切替と、スタッフ個人ログインの発行ができます。
                 </p>
+
+                <h3 className="text-base font-semibold">基本操作</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -416,30 +361,70 @@ export default function GuidePage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>スタッフを「無効」にすると、担当者選択から非表示になります（データは保持）</span>
+                    <span>スタッフを「無効」にすると、担当者選択から非表示になります（過去の回答データは保持）</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <span>スタッフリーダーボードで月次/通算の回答数ランキングが確認できます</span>
                   </li>
                 </ul>
+
+                <h3 className="text-base font-semibold mt-6">ログインアカウントの発行</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  スタッフ登録時に「ログインを有効化」することで、そのスタッフ用のメールアドレス＋パスワードを発行できます。
+                  発行時に、以下2つの権限のどちらかを選択します。
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-3 rounded-md border bg-card p-3">
+                    <Crown className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                    <div>
+                      <p className="text-sm font-medium">オーナー（clinic_admin）</p>
+                      <p className="text-xs text-muted-foreground">
+                        ダッシュボードの全機能にアクセス可能。経営レポート・設定・スタッフ管理を含みます。
+                        院長・医院の管理者に割り当てます。
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 rounded-md border bg-card p-3">
+                    <Users className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+                    <div>
+                      <p className="text-sm font-medium">スタッフ（staff）</p>
+                      <p className="text-xs text-muted-foreground">
+                        ダッシュボードのホーム画面（日次実績・ゲーミフィケーション・患者の声）のみ閲覧可能。
+                        経営レポート・設定・スタッフ管理にはアクセスできません。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <h3 className="text-base font-semibold mt-6">パスワードリセット</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  スタッフの編集画面から、オーナーが各スタッフのパスワードを再設定できます。
+                  スタッフがパスワードを忘れた場合は、オーナーに依頼してください。
+                </p>
+
+                <TipBox>
+                  「オーナー」「スタッフ」の権限はカード上にバッジで表示されます（👑オーナー / 🔑スタッフ）。
+                  経営データを守るため、スタッフ個人のログインは「スタッフ」権限で発行することを推奨します。
+                </TipBox>
               </div>
             </section>
 
-            {/* 9. 設定 */}
+            {/* 8. 設定 */}
             <section>
-              <SectionTitle id="settings" number={9} title="設定" icon={Settings} />
+              <SectionTitle id="settings" number={8} title="設定" icon={Settings} />
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  クリニックの基本設定を管理できます。
+                  クリニックの基本設定を管理できます。設定ページはオーナー権限でのみアクセスできます。
                 </p>
                 <div className="space-y-2">
                   {[
                     { title: "クリニック名", desc: "ダッシュボードやアンケートに表示される名前" },
                     { title: "診療科目", desc: "一般・矯正・小児・審美・口腔外科から選択。ベンチマーク基準に使用" },
-                    { title: "営業日数/週・定休日", desc: "ストリーク計算や日次目標の算出に使用" },
-                    { title: "アンケート完了後", desc: "「アンケートのみ終了」または「LINE誘導」の2択。医院HPリンクも独立設定可能" },
-                    { title: "経営レポートPINロック", desc: "4桁PINで経営レポートを保護。1アカウント共有でも院長のみ閲覧可能" },
+                    { title: "定休日（曜日指定）", desc: "毎週の定休曜日。ストリーク計算や日次目標の算出に使用され、休診日は自動スキップされます" },
+                    { title: "アンケート完了後の誘導", desc: "「アンケートのみ終了」または「LINE友だち追加」の2択。LINE誘導を選ぶとサンクス画面にQRコードが表示されます" },
+                    { title: "LINE公式アカウントURL", desc: "アンケート完了後に表示するLINE友だち追加リンク（任意）" },
+                    { title: "医院ホームページURL", desc: "アンケート完了後に表示する医院HPリンク（任意）。LINE誘導の有無とは独立して設定可能" },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-3 rounded-md border bg-card p-3">
                       <Settings className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -450,12 +435,16 @@ export default function GuidePage() {
                     </div>
                   ))}
                 </div>
+                <TipBox>
+                  旧バージョンにあった「経営レポートのPINロック」設定は廃止されました。
+                  現在はスタッフ管理からアカウント単位で権限を切り替える方式となっています。
+                </TipBox>
               </div>
             </section>
 
-            {/* 11. FAQ */}
+            {/* 9. FAQ */}
             <section>
-              <SectionTitle id="faq" number={10} title="よくある質問" icon={HelpCircle} />
+              <SectionTitle id="faq" number={9} title="よくある質問" icon={HelpCircle} />
               <div className="space-y-4">
                 {[
                   {
@@ -468,27 +457,35 @@ export default function GuidePage() {
                   },
                   {
                     q: "日次目標の件数はどう決まりますか？",
-                    a: "前月の来院数（経営レポートの入力値）と診療日数から自動算出されます。目標を連続7日達成/未達成で目標レベルが自動調整されます。",
+                    a: "前月の来院数（経営レポートの入力値）と診療日数から自動算出されます。前月データがない場合は過去30営業日の平均が使われます。目標を連続7日達成/未達成で目標レベル（乗数）が自動調整されます。",
                   },
                   {
                     q: "休診日にストリークは途切れますか？",
-                    a: "いいえ。設定で登録された定休日・臨時休診日はストリーク計算から自動スキップされます。",
+                    a: "いいえ。設定で登録された定休日（毎週の曜日指定）はストリーク計算から自動スキップされます。",
                   },
                   {
                     q: "テストでアンケートを試したい場合は？",
-                    a: "管理者メニューの「テスト」ページから、医院端末モードでテスト回答できます。テスト回答はDB保存されず集計に含まれません。",
+                    a: "アンケートURLの末尾に「?test=1」を付けてアクセスすることで、テストモードで回答できます。テストモードの回答はDBには保存されず、集計にも含まれません。",
                   },
                   {
                     q: "データはどのくらい保持されますか？",
                     a: "プランにより異なります。フリープラン3ヶ月、スターター12ヶ月、スタンダード以上は無制限です。",
                   },
                   {
-                    q: "経営レポートのPINを忘れた場合は？",
-                    a: "MIERU Clinic運営（管理者）にお問い合わせください。システム管理者がPINをリセットできます。リセット後、設定ページから新しいPINを設定してください。",
+                    q: "経営レポートが見られないスタッフがいます",
+                    a: "経営レポートはオーナー権限のアカウントのみ閲覧可能です。スタッフ権限のアカウントではアクセスできません。これは旧バージョンの4桁PINロックに代わる権限管理です。必要に応じて、スタッフ管理画面からオーナー権限のアカウントを発行してください。",
                   },
                   {
                     q: "複数のスタッフで1つのアカウントを共有していますが問題ありませんか？",
-                    a: "問題ありません。MIERU Clinicは1クリニック＝1アカウントの運用を想定しています。経営データなど院長のみが見たい情報は、経営レポートのPINロック機能で保護できます。",
+                    a: "可能ですが推奨しません。現在はスタッフごとに個別ログインを発行できます。オーナー／スタッフの権限を使い分けることで、院長のみが経営データを閲覧し、スタッフはホーム画面（実績・ゲーミフィケーション）のみを見る運用ができます。",
+                  },
+                  {
+                    q: "オーナー権限とスタッフ権限は何が違いますか？",
+                    a: "オーナーは全機能（満足度レポート・経営レポート・改善アクション・スタッフ管理・設定）にアクセスできます。スタッフはダッシュボードのホーム画面のみ閲覧可能で、経営データや設定には一切アクセスできません。",
+                  },
+                  {
+                    q: "スタッフのパスワードを忘れてしまいました",
+                    a: "オーナー権限のアカウントからスタッフ管理画面を開き、該当スタッフの編集から新しいパスワードに再設定できます。",
                   },
                   {
                     q: "スマートフォンからもダッシュボードは見られますか？",
@@ -506,9 +503,9 @@ export default function GuidePage() {
               </div>
             </section>
 
-            {/* 13. 困ったときは */}
+            {/* 10. 困ったときは */}
             <section>
-              <SectionTitle id="troubleshooting" number={11} title="困ったときは" icon={Wrench} />
+              <SectionTitle id="troubleshooting" number={10} title="困ったときは" icon={Wrench} />
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   よくあるトラブルと対処法をまとめています。
@@ -520,7 +517,7 @@ export default function GuidePage() {
                     solutions: [
                       "インターネット接続を確認してください",
                       "ブラウザのキャッシュをクリアしてページを再読み込みしてください",
-                      "アンケートURLが正しいか確認してください（/kiosk/クリニックスラッグ）",
+                      "アンケートURLが正しいか確認してください（/kiosk/[クリニックスラッグ]）",
                     ],
                   },
                   {
@@ -528,28 +525,37 @@ export default function GuidePage() {
                     solutions: [
                       "メールアドレスとパスワードが正しいか確認してください",
                       "Caps Lockがオフになっているか確認してください",
-                      "それでもログインできない場合は管理者にパスワードリセットを依頼してください",
+                      "スタッフ個人ログインの場合は、オーナー権限のアカウントからスタッフ管理画面でパスワードを再設定してもらってください",
                     ],
                   },
                   {
-                    problem: "日次目標が「10件」のまま変わらない",
+                    problem: "経営レポート・設定・スタッフ管理のメニューが表示されない",
                     solutions: [
-                      "経営レポートのデータ入力ページで前月の来院数を入力してください",
-                      "来院数（初診数＋再診数）が入力されると、翌日から自動算出された目標に切り替わります",
+                      "ログイン中のアカウントが「スタッフ権限」になっている可能性があります。スタッフ権限ではホーム画面のみ閲覧可能です",
+                      "経営レポートや設定にアクセスするには「オーナー権限」のアカウントでログインする必要があります",
+                      "権限の変更が必要な場合は、現在のオーナーにスタッフ管理画面から権限を変更してもらってください",
                     ],
                   },
                   {
-                    problem: "経営レポートが開けない（PINを求められる）",
+                    problem: "日次目標の件数がいつまでも変わらない",
                     solutions: [
-                      "院長（管理者）が設定した4桁のPINを入力してください",
-                      "PINを忘れた場合はMIERU Clinic運営にお問い合わせください",
+                      "経営レポートのデータ入力ページで前月の来院数（初診数＋再診数）を入力してください",
+                      "入力されると、翌日から自動算出された目標に切り替わります",
+                      "経営レポートはオーナー権限のアカウントのみアクセス可能です",
                     ],
                   },
                   {
                     problem: "アンケート回答数がカウントされない",
                     solutions: [
-                      "テストモード（?test=1）で回答していないか確認してください。テスト回答は集計に含まれません",
-                      "アンケートの最後まで回答が完了しているか確認してください",
+                      "テストモード（?test=1 が付いたURL）で回答していないか確認してください。テスト回答は集計に含まれません",
+                      "アンケートの最後（サンクス画面）まで回答が完了しているか確認してください",
+                    ],
+                  },
+                  {
+                    problem: "アンケート完了後にLINE友だち追加QRが表示されない",
+                    solutions: [
+                      "設定ページで「アンケート完了後の誘導」を「LINE友だち追加」に設定しているか確認してください",
+                      "LINE公式アカウントのURLが正しく入力されているか確認してください",
                     ],
                   },
                 ].map((item, i) => (
