@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { APP_NAME } from "@/lib/constants"
 import {
   Tablet,
@@ -451,8 +452,11 @@ export default function GuidePage() {
                   </ul>
                 </div>
                 <TipBox>
-                  オーナー権限の付与・変更は、スタッフ管理画面から行えます。旧バージョンにあった「4桁PINロック」機能は廃止され、
-                  アカウント単位のロール（オーナー／スタッフ）で権限を分離する仕組みに変わりました。
+                  オーナー権限の付与・変更は、
+                  <Link href="/dashboard/staff" className="font-medium text-primary underline underline-offset-2 hover:opacity-80">
+                    スタッフ管理画面
+                  </Link>
+                  から行えます。
                 </TipBox>
               </div>
             </section>
