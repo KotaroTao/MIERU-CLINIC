@@ -150,7 +150,26 @@ export function RegisterForm({ plan }: RegisterFormProps) {
           className="mt-1 h-4 w-4 rounded border-gray-300"
         />
         <Label htmlFor="terms" className="text-sm leading-tight cursor-pointer">
-          {messages.auth.termsAgree}
+          <Link
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline-offset-4 hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            利用規約
+          </Link>
+          と
+          <Link
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline-offset-4 hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            プライバシーポリシー
+          </Link>
+          に同意する
         </Label>
       </div>
       <TurnstileWidget onVerify={setTurnstileToken} />
