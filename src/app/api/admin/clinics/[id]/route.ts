@@ -33,11 +33,31 @@ export async function DELETE(
   }
 
   await prisma.$transaction(async (tx) => {
-    // クリニックに紐づくユーザー（管理者・スタッフ）を先に削除
-    // Clinic.ownerUserId は SetNull、User.clinicId は SetNull なので削除可能
-    await tx.user.deleteMany({
-      where: { clinicId: id },
+    // クリニックに関連する全ユーザーを収集（複数経路を網羅）
+    //   1. User.clinicId が一致
+    //   2. Clinic.ownerUserId（オーナー）
+    //   3. User.staff.clinicId が一致（スタッフ）
+    // ※ system_admin は role で除外（運営アカウントを誤って消さない）
+    const relatedUsers = await tx.user.findMany({
+      where: {
+        role: { not: "system_admin" },
+        OR: [
+          { clinicId: id },
+          { ownedClinic: { id } },
+          { staff: { clinicId: id } },
+        ],
+      },
+      select: { id: true },
     })
+    const userIds = relatedUsers.map((u) => u.id)
+
+    if (userIds.length > 0) {
+      // ユーザー削除前に EmailLog の userId を NULL にする必要はない
+      // （EmailLog.userId は onDelete: SetNull で自動処理）
+      await tx.user.deleteMany({
+        where: { id: { in: userIds } },
+      })
+    }
 
     // クリニック削除（残りの関連レコードは onDelete: Cascade で連鎖削除）
     await tx.clinic.delete({
