@@ -228,7 +228,7 @@ export default async function AdminPage({
                 const clinicSettings = (clinic.settings ?? {}) as ClinicSettings
                 const clinicPlan = (clinicSettings.plan ?? "free") as PlanTier
                 return (
-                  <ClinicRow key={clinic.id} clinicId={clinic.id} clinicName={clinic.name} plan={clinicPlan} ownerUserId={clinic.ownerUserId} ownerName={clinic.owner?.name} ownerEmail={clinic.owner?.email}>
+                  <ClinicRow key={clinic.id} clinicId={clinic.id} clinicName={clinic.name} plan={clinicPlan} ownerUserId={clinic.ownerUserId} ownerName={clinic.owner?.name} ownerEmail={clinic.owner?.email} ownerEmailVerified={clinic.owner?.emailVerified ? true : clinic.owner ? false : null}>
                     {/* Compact single-row: name + slug + status + inline metrics */}
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <div className="flex min-w-0 items-center gap-2">
