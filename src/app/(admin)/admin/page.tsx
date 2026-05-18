@@ -1,10 +1,24 @@
 import Link from "next/link"
 import { Suspense } from "react"
-import { getAllClinics, getClinicHealthBatch, getPlatformTodayStats } from "@/lib/queries/clinics"
-import { prisma } from "@/lib/prisma"
+import { getAllClinics, getClinicHealthBatch } from "@/lib/queries/clinics"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { messages } from "@/lib/messages"
-import { Lightbulb, HardDrive, SmilePlus, Megaphone, MessageSquare, Mail, ArrowRight, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, AlertTriangle, Activity } from "lucide-react"
+import {
+  Lightbulb,
+  HardDrive,
+  SmilePlus,
+  Megaphone,
+  MessageSquare,
+  Mail,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  Activity,
+  ChevronDown,
+  Trophy,
+} from "lucide-react"
 import { SpecialPlanUrl, GuideUrl } from "@/components/admin/special-plan-url"
 import { ClinicSearch } from "@/components/admin/clinic-search"
 import { ClinicRow } from "@/components/admin/clinic-row"
@@ -93,6 +107,50 @@ function ClinicStatusIndicator({ todayCount, lastResponseAt, avgScore }: {
   )
 }
 
+const MANAGEMENT_TOOLS: Array<{
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  color: string
+}> = [
+  {
+    href: "/admin/tips",
+    icon: Lightbulb,
+    label: "Tips",
+    color: "bg-amber-50 text-amber-600 hover:bg-amber-100",
+  },
+  {
+    href: "/admin/comments",
+    icon: MessageSquare,
+    label: "コメント",
+    color: "bg-teal-50 text-teal-600 hover:bg-teal-100",
+  },
+  {
+    href: "/admin/email-templates",
+    icon: Mail,
+    label: "メール文面",
+    color: "bg-sky-50 text-sky-600 hover:bg-sky-100",
+  },
+  {
+    href: "/admin/improvement-actions",
+    icon: Megaphone,
+    label: "改善アクション",
+    color: "bg-purple-50 text-purple-600 hover:bg-purple-100",
+  },
+  {
+    href: "/admin/kawaii-teeth",
+    icon: SmilePlus,
+    label: "Kawaii Teeth",
+    color: "bg-pink-50 text-pink-600 hover:bg-pink-100",
+  },
+  {
+    href: "/admin/backups",
+    icon: HardDrive,
+    label: "バックアップ",
+    color: "bg-blue-50 text-blue-600 hover:bg-blue-100",
+  },
+]
+
 export default async function AdminPage({
   searchParams,
 }: {
@@ -102,20 +160,8 @@ export default async function AdminPage({
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1)
   const search = params.search ?? ""
 
-  // 全クエリを並列実行（3本同時）
-  const [{ clinics, total, totalPages }, totalResponsesResult, platformToday] = await Promise.all([
-    getAllClinics({ page, limit: 20, search }),
-    prisma.$queryRaw<Array<{ estimate: bigint }>>`
-      SELECT GREATEST(
-        (SELECT reltuples::bigint FROM pg_class WHERE relname = 'survey_responses'),
-        0
-      ) AS estimate
-    `,
-    getPlatformTodayStats(),
-  ])
-  const totalResponses = Number(totalResponsesResult[0]?.estimate ?? 0)
+  const { clinics, total, totalPages } = await getAllClinics({ page, limit: 20, search })
 
-  // クリニック単位のKPIをバッチ取得（クリニック一覧取得後に実行）
   const clinicIds = clinics.map((c) => c.id)
   const healthMap = await getClinicHealthBatch(clinicIds)
 
@@ -128,178 +174,38 @@ export default async function AdminPage({
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{messages.admin.title}</h1>
-
-      {/* Platform KPIs */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {messages.admin.clinicCount}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              本日の回答
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold">{platformToday.todayTotal}</span>
-              <span className="text-xs text-muted-foreground">
-                {platformToday.activeClinicsToday}院稼働
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              本日の平均スコア
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {platformToday.platformAvgScore != null
-                ? platformToday.platformAvgScore.toFixed(1)
-                : "—"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {messages.admin.totalResponses}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalResponses.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-5">
+      {/* Header row: title + management tools */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-bold">{messages.admin.title}</h1>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {MANAGEMENT_TOOLS.map((tool) => {
+            const Icon = tool.icon
+            return (
+              <Link
+                key={tool.href}
+                href={tool.href}
+                className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${tool.color}`}
+                title={tool.label}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                <span>{tool.label}</span>
+              </Link>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Management links */}
-      <div className="space-y-3">
-        <SpecialPlanUrl />
-        <GuideUrl />
-
-        <Link
-          href="/admin/tips"
-          className="flex items-center justify-between rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50/80 to-white p-4 transition-colors hover:border-amber-300 hover:shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-              <Lightbulb className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">{messages.tipManager.title}</p>
-              <p className="text-xs text-muted-foreground">{messages.tipManager.description}</p>
-            </div>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-
-        <Link
-          href="/admin/comments"
-          className="flex items-center justify-between rounded-lg border border-teal-200 bg-gradient-to-r from-teal-50/80 to-white p-4 transition-colors hover:border-teal-300 hover:shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-600">
-              <MessageSquare className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">{messages.commentsManager.title}</p>
-              <p className="text-xs text-muted-foreground">{messages.commentsManager.description}</p>
-            </div>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-
-        <Link
-          href="/admin/email-templates"
-          className="flex items-center justify-between rounded-lg border border-sky-200 bg-gradient-to-r from-sky-50/80 to-white p-4 transition-colors hover:border-sky-300 hover:shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
-              <Mail className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">{messages.emailTemplates.title}</p>
-              <p className="text-xs text-muted-foreground">{messages.emailTemplates.description}</p>
-            </div>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-
-        <Link
-          href="/admin/improvement-actions"
-          className="flex items-center justify-between rounded-lg border border-purple-200 bg-gradient-to-r from-purple-50/80 to-white p-4 transition-colors hover:border-purple-300 hover:shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
-              <Megaphone className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">{messages.platformActions.manage}</p>
-              <p className="text-xs text-muted-foreground">{messages.platformActions.pickupDesc}</p>
-            </div>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-
-        <Link
-          href="/admin/backups"
-          className="flex items-center justify-between rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50/80 to-white p-4 transition-colors hover:border-blue-300 hover:shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-              <HardDrive className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">{messages.backup.title}</p>
-              <p className="text-xs text-muted-foreground">{messages.backup.description}</p>
-            </div>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-
-        <Link
-          href="/admin/kawaii-teeth"
-          className="flex items-center justify-between rounded-lg border border-pink-200 bg-gradient-to-r from-pink-50/80 to-white p-4 transition-colors hover:border-pink-300 hover:shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-100 text-pink-600">
-              <SmilePlus className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">{messages.kawaiiTeeth.adminTitle}</p>
-              <p className="text-xs text-muted-foreground">{messages.kawaiiTeeth.adminDescription}</p>
-            </div>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-        </Link>
-      </div>
-
-      {/* PX-Value Rankings */}
-      <Suspense>
-        <PxValueDashboard />
-      </Suspense>
-
-      {/* Clinic list */}
+      {/* Clinic list (primary view) */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <CardTitle className="text-base">
                 {messages.admin.clinicList}
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  全{total}院
+                </span>
               </CardTitle>
               <AddClinicDialog />
             </div>
@@ -447,6 +353,24 @@ export default async function AdminPage({
           )}
         </CardContent>
       </Card>
+
+      {/* Secondary section: collapsible resources */}
+      <details className="group rounded-lg border bg-card">
+        <summary className="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium hover:bg-muted/40">
+          <span className="flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-amber-500" />
+            PX-Value ランキング・登録URL
+          </span>
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="space-y-3 border-t p-4">
+          <SpecialPlanUrl />
+          <GuideUrl />
+          <Suspense>
+            <PxValueDashboard />
+          </Suspense>
+        </div>
+      </details>
     </div>
   )
 }
