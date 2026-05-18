@@ -4,14 +4,11 @@ import { prisma } from "@/lib/prisma"
 import { getOperatorClinicId } from "@/lib/admin-mode"
 import { getStaffEngagementData } from "@/lib/queries/engagement"
 import { getQuestionCurrentScores } from "@/lib/queries/stats"
-import { evaluateSpecialPlanProgress } from "@/lib/plan"
 import { StaffEngagement } from "@/components/dashboard/staff-engagement"
 import { ActivationChecklist } from "@/components/dashboard/activation-checklist"
-import { SpecialPlanCard } from "@/components/dashboard/special-plan-card"
 import { pickDashboardMessage } from "@/lib/dynamic-messages"
 import type { StoredComment } from "@/lib/dynamic-messages"
 import { ROLES } from "@/lib/constants"
-import type { ClinicSettings } from "@/types"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -27,20 +24,14 @@ export default async function DashboardPage() {
     redirect("/login")
   }
 
-  // Get clinic info for survey links + plan check
+  // Get clinic info for survey links
   const clinic = await prisma.clinic.findUnique({
     where: { id: clinicId },
-    select: { slug: true, settings: true },
+    select: { slug: true },
   })
   const kioskUrl = clinic ? `/kiosk/${encodeURIComponent(clinic.slug)}` : "/dashboard/survey-start"
-  const clinicSettings = (clinic?.settings ?? {}) as ClinicSettings
 
   const isAdmin = session.user.role === ROLES.CLINIC_ADMIN || session.user.role === ROLES.SYSTEM_ADMIN
-
-  // Special plan condition evaluation (only for special plan clinics)
-  const specialPlanProgress = clinicSettings.plan === "special" || clinicSettings.specialPlanStatus === "warning"
-    ? await evaluateSpecialPlanProgress(clinicId, clinicSettings)
-    : null
 
   // Fetch engagement + active improvement actions + staff count + dashboard comments
   const [engagement, activeActions, staffCount, commentsSetting] = await Promise.all([
@@ -90,7 +81,6 @@ export default async function DashboardPage() {
       <p className="text-sm text-muted-foreground">
         {dynamicMessage}
       </p>
-      {specialPlanProgress && <SpecialPlanCard progress={specialPlanProgress} />}
       <ActivationChecklist isAdmin={isAdmin} />
       <StaffEngagement
         data={engagement}
