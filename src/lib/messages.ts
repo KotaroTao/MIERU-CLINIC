@@ -807,6 +807,15 @@ export const messages = {
     noAdminUsers: "管理者ユーザーがいません",
     inactive: "無効",
     fetchError: "データの取得に失敗しました",
+    // クリニック削除
+    deleteClinic: "クリニックを削除",
+    deleteClinicTitle: "クリニックを削除",
+    deleteClinicWarning: "この操作は取り消せません。クリニックに紐づく全データ（アンケート回答・スタッフ・改善アクション・メールログ・管理者アカウント等）が完全に削除されます。",
+    deleteClinicConfirmLabel: "確認のため、クリニック名を入力してください",
+    deleteClinicSubmit: "完全に削除する",
+    deleteClinicSuccess: "クリニックを削除しました",
+    deleteClinicFailed: "クリニックの削除に失敗しました",
+    deleteConfirmMismatch: "入力されたクリニック名が一致しません",
     // AI分析ステータス
     aiStatus: {
       title: "AI分析ステータス",

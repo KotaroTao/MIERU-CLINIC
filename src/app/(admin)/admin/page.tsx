@@ -229,61 +229,39 @@ export default async function AdminPage({
                 const clinicPlan = (clinicSettings.plan ?? "free") as PlanTier
                 return (
                   <ClinicRow key={clinic.id} clinicId={clinic.id} clinicName={clinic.name} plan={clinicPlan} ownerUserId={clinic.ownerUserId} ownerName={clinic.owner?.name} ownerEmail={clinic.owner?.email}>
-                    {/* Row 1: Clinic name + status */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{clinic.name}</h3>
-                          {health && (
-                            <ClinicStatusIndicator
-                              todayCount={health.todayCount}
-                              lastResponseAt={health.lastResponseAt}
-                              avgScore={health.avgScore}
-                            />
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">/{clinic.slug}</p>
+                    {/* Compact single-row: name + slug + status + inline metrics */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h3 className="truncate text-sm font-semibold">{clinic.name}</h3>
+                        <span className="text-[11px] text-muted-foreground">/{clinic.slug}</span>
+                        {health && (
+                          <ClinicStatusIndicator
+                            todayCount={health.todayCount}
+                            lastResponseAt={health.lastResponseAt}
+                            avgScore={health.avgScore}
+                          />
+                        )}
                       </div>
-                    </div>
-
-                    {/* Row 2: Metrics grid */}
-                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
-                      <div>
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">満足度</p>
-                        <div className="mt-0.5">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 sm:ml-auto">
+                        <div className="flex items-center gap-1 text-[11px]">
+                          <span className="text-muted-foreground">満足度</span>
                           <ScoreBadge
                             score={health?.avgScore ?? null}
                             prevScore={health?.prevMonthAvg ?? null}
                           />
                         </div>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">本日</p>
-                        <p className="mt-0.5 text-sm font-bold">
-                          {health?.todayCount ?? 0}
-                          <span className="text-xs font-normal text-muted-foreground">件</span>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">今月</p>
-                        <p className="mt-0.5 text-sm font-bold">
-                          {health?.thisMonthCount ?? 0}
-                          <span className="text-xs font-normal text-muted-foreground">件</span>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{messages.common.staffLabel}</p>
-                        <p className="mt-0.5 text-sm font-bold">
-                          {clinic._count.staff}
-                          <span className="text-xs font-normal text-muted-foreground">人</span>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">総回答</p>
-                        <p className="mt-0.5 text-sm font-bold">
-                          {clinic._count.surveyResponses.toLocaleString()}
-                          <span className="text-xs font-normal text-muted-foreground">件</span>
-                        </p>
+                        <div className="text-[11px] text-muted-foreground">
+                          本日 <span className="font-bold text-foreground">{health?.todayCount ?? 0}</span>件
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          今月 <span className="font-bold text-foreground">{health?.thisMonthCount ?? 0}</span>件
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {messages.common.staffLabel} <span className="font-bold text-foreground">{clinic._count.staff}</span>人
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          総回答 <span className="font-bold text-foreground">{clinic._count.surveyResponses.toLocaleString()}</span>件
+                        </div>
                       </div>
                     </div>
                   </ClinicRow>

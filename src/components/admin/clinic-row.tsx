@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { LogIn, Loader2, Settings2, Sparkles, Crown, Mail, History } from "lucide-react"
+import { LogIn, Loader2, Settings2, Sparkles, Crown, Mail, History, Trash2 } from "lucide-react"
 import { PlanSwitcher } from "@/components/admin/plan-switcher"
 import { DemoSettingsDialog } from "@/components/admin/demo-settings-dialog"
 import { OwnerSwitcher } from "@/components/admin/owner-switcher"
 import { EmailSwitcher } from "@/components/admin/email-switcher"
+import { DeleteClinicDialog } from "@/components/admin/delete-clinic-dialog"
 import { PLANS } from "@/lib/constants"
 import { messages } from "@/lib/messages"
 import type { PlanTier } from "@/types"
@@ -35,6 +36,7 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
   const [demoDialogOpen, setDemoDialogOpen] = useState(false)
   const [ownerDialogOpen, setOwnerDialogOpen] = useState(false)
   const [emailDialogOpen, setEmailDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [currentPlan, setCurrentPlan] = useState<PlanTier>(plan ?? "free")
   const [ownerName, setOwnerName] = useState(initialOwnerName ?? null)
   const [ownerEmail, setOwnerEmail] = useState(initialOwnerEmail ?? null)
@@ -75,6 +77,11 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
     setEmailDialogOpen(true)
   }
 
+  function handleDeleteClick(e: React.MouseEvent) {
+    e.stopPropagation()
+    setDeleteDialogOpen(true)
+  }
+
   const planDef = PLANS[currentPlan]
 
   return (
@@ -89,12 +96,12 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
             handleClick()
           }
         }}
-        className="group cursor-pointer rounded-lg border p-4 transition-colors hover:border-violet-200 hover:bg-violet-50/30"
+        className="group cursor-pointer rounded-lg border p-2.5 transition-colors hover:border-violet-200 hover:bg-violet-50/30"
       >
         {children}
         {/* Plan badge + Owner badge + Demo settings + Login overlay */}
-        <div className="mt-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
               onClick={handlePlanClick}
@@ -137,17 +144,26 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
               <History className="h-2.5 w-2.5" />
               {messages.emailLogs.rowButton}
             </Link>
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-[10px] font-medium text-red-600 transition-colors hover:bg-red-100"
+              title={messages.admin.deleteClinic}
+            >
+              <Trash2 className="h-2.5 w-2.5" />
+              {messages.common.delete}
+            </button>
           </div>
-          <div className="opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="hidden opacity-0 transition-opacity group-hover:opacity-100 sm:block">
             {loading ? (
-              <span className="flex items-center gap-1.5 text-xs text-violet-500">
+              <span className="flex items-center gap-1 text-[11px] text-violet-500">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 ログイン中...
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-xs text-violet-500">
+              <span className="flex items-center gap-1 text-[11px] text-violet-500 whitespace-nowrap">
                 <LogIn className="h-3 w-3" />
-                クリックでダッシュボードを開く
+                クリックでダッシュボード
               </span>
             )}
           </div>
@@ -192,6 +208,15 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
           clinicId={clinicId}
           clinicName={clinicName}
           onClose={() => setDemoDialogOpen(false)}
+        />
+      )}
+
+      {/* Delete clinic dialog */}
+      {deleteDialogOpen && (
+        <DeleteClinicDialog
+          clinicId={clinicId}
+          clinicName={clinicName}
+          onClose={() => setDeleteDialogOpen(false)}
         />
       )}
     </>
