@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { LogIn, Loader2, Settings2, Sparkles, Crown, Mail, History, Trash2 } from "lucide-react"
+import { LogIn, Loader2, Settings2, Sparkles, Crown, Mail, History, Trash2, ShieldCheck, ShieldAlert } from "lucide-react"
 import { PlanSwitcher } from "@/components/admin/plan-switcher"
 import { DemoSettingsDialog } from "@/components/admin/demo-settings-dialog"
 import { OwnerSwitcher } from "@/components/admin/owner-switcher"
@@ -27,10 +27,11 @@ interface ClinicRowProps {
   ownerUserId?: string | null
   ownerName?: string | null
   ownerEmail?: string | null
+  ownerEmailVerified?: boolean | null
   children: React.ReactNode
 }
 
-export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: initialOwnerName, ownerEmail: initialOwnerEmail, children }: ClinicRowProps) {
+export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: initialOwnerName, ownerEmail: initialOwnerEmail, ownerEmailVerified, children }: ClinicRowProps) {
   const [loading, setLoading] = useState(false)
   const [planDialogOpen, setPlanDialogOpen] = useState(false)
   const [demoDialogOpen, setDemoDialogOpen] = useState(false)
@@ -126,6 +127,24 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
               <Mail className="h-2.5 w-2.5" />
               {ownerEmail ?? messages.admin.emailNotSet}
             </button>
+            {ownerEmailVerified === true && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-medium text-emerald-700"
+                title={messages.admin.emailVerified}
+              >
+                <ShieldCheck className="h-2.5 w-2.5" />
+                {messages.admin.emailVerified}
+              </span>
+            )}
+            {ownerEmailVerified === false && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-medium text-rose-700"
+                title={messages.admin.emailUnverified}
+              >
+                <ShieldAlert className="h-2.5 w-2.5" />
+                {messages.admin.emailUnverified}
+              </span>
+            )}
             {currentPlan === "demo" && (
               <button
                 type="button"

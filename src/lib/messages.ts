@@ -802,6 +802,8 @@ export const messages = {
     // メールアドレス管理
     emailManagement: "メールアドレス管理",
     emailNotSet: "メール未設定",
+    emailVerified: "認証済み",
+    emailUnverified: "未認証",
     emailChangeSuccess: "メールアドレスを変更しました",
     emailChangeTitle: "メールアドレスを変更",
     noAdminUsers: "管理者ユーザーがいません",
