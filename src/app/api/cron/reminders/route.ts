@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       createdAt: true,
       users: {
         where: { role: "clinic_admin", isActive: true },
-        select: { email: true, emailVerified: true },
+        select: { id: true, email: true, emailVerified: true },
         take: 1,
       },
     },
@@ -67,7 +67,14 @@ export async function POST(request: NextRequest) {
 
     const loginUrl = `${appUrl}/login`
     const { subject, html } = buildReminderEmail(clinic.name, loginUrl, daysSinceCreation)
-    const sent = await sendMail({ to: admin.email, subject, html })
+    const sent = await sendMail({
+      to: admin.email,
+      subject,
+      html,
+      type: "reminder",
+      clinicId: clinic.id,
+      userId: admin.id,
+    })
 
     if (sent) {
       sentCount++

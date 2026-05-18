@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       settings: true,
       users: {
         where: { role: "clinic_admin", isActive: true, emailVerified: { not: null } },
-        select: { email: true },
+        select: { id: true, email: true },
         take: 1,
       },
     },
@@ -103,7 +103,14 @@ export async function POST(request: NextRequest) {
       totalResponses: totalCount,
     })
 
-    const sent = await sendMail({ to: admin.email, subject, html })
+    const sent = await sendMail({
+      to: admin.email,
+      subject,
+      html,
+      type: "weekly_summary",
+      clinicId: clinic.id,
+      userId: admin.id,
+    })
     if (sent) sentCount++
   }
 

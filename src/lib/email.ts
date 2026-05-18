@@ -22,10 +22,57 @@ import {
  *   SMTP_FROM: 送信元アドレス（例: MIERU Clinic <register@mieru-clinic.com>）
  */
 
+export type EmailType =
+  | "verification"
+  | "resend_verification"
+  | "welcome"
+  | "reminder"
+  | "weekly_summary"
+  | "password_reset"
+
 interface SendMailOptions {
   to: string
   subject: string
   html: string
+  type: EmailType
+  clinicId?: string | null
+  userId?: string | null
+}
+
+/** DBへの送信履歴記録（失敗してもメール処理自体は止めない） */
+async function recordEmailLog(params: {
+  clinicId?: string | null
+  userId?: string | null
+  type: EmailType
+  to: string
+  subject: string
+  html: string
+  status: "sent" | "failed"
+  errorMessage?: string | null
+  providerMessageId?: string | null
+}): Promise<void> {
+  try {
+    await prisma.emailLog.create({
+      data: {
+        clinicId: params.clinicId ?? null,
+        userId: params.userId ?? null,
+        type: params.type,
+        to: params.to,
+        subject: params.subject,
+        html: params.html,
+        status: params.status,
+        errorMessage: params.errorMessage ?? null,
+        providerMessageId: params.providerMessageId ?? null,
+      },
+    })
+  } catch (err) {
+    logger.warn("Failed to record email log", {
+      component: "recordEmailLog",
+      to: params.to,
+      type: params.type,
+      error: String(err),
+    })
+  }
 }
 
 /** 一時的なエラー（リトライ対象）かどうか判定 */
@@ -41,7 +88,8 @@ function sleep(ms: number): Promise<void> {
 const MAX_RETRIES = 2
 const RETRY_DELAYS = [1000, 3000] // 1秒, 3秒
 
-export async function sendMail({ to, subject, html }: SendMailOptions): Promise<boolean> {
+export async function sendMail(options: SendMailOptions): Promise<boolean> {
+  const { to, subject, html, type, clinicId, userId } = options
   const smtpHost = process.env.SMTP_HOST
 
   if (smtpHost) {
@@ -49,6 +97,11 @@ export async function sendMail({ to, subject, html }: SendMailOptions): Promise<
     if (!apiKey) {
       logger.error("SMTP_PASS is not configured — cannot authenticate with mail API", {
         component: "sendMail", to, subject,
+      })
+      await recordEmailLog({
+        clinicId, userId, type, to, subject, html,
+        status: "failed",
+        errorMessage: "SMTP_PASS が設定されていません",
       })
       return false
     }
@@ -71,6 +124,12 @@ export async function sendMail({ to, subject, html }: SendMailOptions): Promise<
           if (attempt > 0) {
             logger.info("Mail sent after retry", { component: "sendMail", to, attempt })
           }
+          const respBody = await res.json().catch(() => null) as { id?: string } | null
+          await recordEmailLog({
+            clinicId, userId, type, to, subject, html,
+            status: "sent",
+            providerMessageId: respBody?.id ?? null,
+          })
           return true
         }
 
@@ -89,6 +148,11 @@ export async function sendMail({ to, subject, html }: SendMailOptions): Promise<
         logger.error("Mail API responded with error", {
           component: "sendMail", to, subject, status: res.status, body, attempt,
         })
+        await recordEmailLog({
+          clinicId, userId, type, to, subject, html,
+          status: "failed",
+          errorMessage: `Resend API エラー (status=${res.status}): ${body.slice(0, 500)}`,
+        })
         return false
       } catch (err) {
         // ネットワークエラーはリトライ
@@ -102,6 +166,11 @@ export async function sendMail({ to, subject, html }: SendMailOptions): Promise<
         logger.error("Mail send failed after retries", {
           component: "sendMail", to, subject, error: String(err), attempts: attempt + 1,
         })
+        await recordEmailLog({
+          clinicId, userId, type, to, subject, html,
+          status: "failed",
+          errorMessage: `送信失敗（リトライ後）: ${String(err).slice(0, 500)}`,
+        })
         return false
       }
     }
@@ -112,10 +181,20 @@ export async function sendMail({ to, subject, html }: SendMailOptions): Promise<
   // SMTP未設定: 開発環境ではログ出力して成功扱い、本番では警告
   if (process.env.NODE_ENV === "production") {
     logger.error("SMTP_HOST is not configured — email not sent", { component: "sendMail", to, subject })
+    await recordEmailLog({
+      clinicId, userId, type, to, subject, html,
+      status: "failed",
+      errorMessage: "SMTP_HOST が設定されていません",
+    })
     return false
   }
 
   logger.info("Mail sent (dev fallback — SMTP_HOST not set)", { component: "sendMail", to, subject })
+  await recordEmailLog({
+    clinicId, userId, type, to, subject, html,
+    status: "sent",
+    errorMessage: "開発モード: 実送信なし",
+  })
   return true
 }
 
