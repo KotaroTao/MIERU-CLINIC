@@ -41,9 +41,6 @@ export interface ClinicSettings {
   goalAchieveStreak?: number // 連続達成日数
   goalMissStreak?: number // 連続未達日数
   goalLastCheckedDate?: string // YYYY-MM-DD（最終評価日）
-  // 特別プラン無料継続条件トラッキング
-  specialPlanStatus?: "active" | "warning" | "suspended" // active=正常, warning=1ヶ月未達, suspended=降格済み
-  specialPlanLastEvaluatedMonth?: string // YYYY-MM（最終評価月）
   // Stripe 決済連携
   stripeCustomerId?: string // Stripe Customer ID ("cus_xxx")
   stripeSubscriptionId?: string // Stripe Subscription ID ("sub_xxx")
@@ -59,17 +56,6 @@ export interface PlanInfo {
   trialDaysRemaining: number | null
   trialPlan: PlanTier | null
   canStartTrial: boolean
-}
-
-/** 特別プラン無料継続条件の進捗 */
-export interface SpecialPlanProgress {
-  isSpecialPlan: boolean
-  status: "active" | "warning" | "suspended" | "grace" // grace=登録初月
-  monthlyResponses: number
-  monthlyActions: number
-  requiredResponses: number
-  requiredActions: number
-  currentMonth: string // YYYY-MM
 }
 
 /** アンケート完了後に表示するリンク情報 */
