@@ -46,7 +46,14 @@ export async function GET(request: NextRequest) {
     const loginUrl = `${appUrl}/login`
     const templates = await getEmailTemplates()
     const { subject, html } = buildWelcomeEmail(updatedUser.clinic.name, loginUrl, templates.welcome)
-    sendMail({ to: updatedUser.email, subject, html }).catch((err) => {
+    sendMail({
+      to: updatedUser.email,
+      subject,
+      html,
+      type: "welcome",
+      clinicId: updatedUser.clinicId,
+      userId: updatedUser.id,
+    }).catch((err) => {
       logger.error("Failed to send welcome email", { component: "verify-email", error: String(err) })
     })
   }

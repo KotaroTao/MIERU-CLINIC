@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   // セキュリティ: ユーザーが存在しなくても同じレスポンスを返す（メール列挙攻撃防止）
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, name: true, isActive: true },
+    select: { id: true, name: true, isActive: true, clinicId: true },
   })
 
   if (user && user.isActive) {
@@ -46,7 +46,14 @@ export async function POST(request: NextRequest) {
     const resetUrl = `${appUrl}/reset-password?token=${token}`
     const { subject, html } = buildPasswordResetEmail(resetUrl, user.name)
 
-    const sent = await sendMail({ to: email, subject, html })
+    const sent = await sendMail({
+      to: email,
+      subject,
+      html,
+      type: "password_reset",
+      clinicId: user.clinicId,
+      userId: user.id,
+    })
     if (!sent) {
       logger.error("Failed to send password reset email", { component: "forgot-password", email })
     }

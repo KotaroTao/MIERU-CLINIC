@@ -29,6 +29,7 @@ model Clinic {
   advisoryReports        AdvisoryReport[]
   kawaiiTeethCollections KawaiiTeethCollection[]
   billingEvents          BillingEvent[]
+  emailLogs              EmailLog[]
 
   @@map("clinics")
 }
@@ -69,6 +70,7 @@ model User {
   clinic      Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
   staff       Staff?  @relation(fields: [staffId], references: [id], onDelete: SetNull)
   ownedClinic Clinic? @relation("ClinicOwner")
+  emailLogs   EmailLog[]
 
   @@index([clinicId])
   @@map("users")
@@ -305,6 +307,29 @@ model BillingEvent {
   @@index([clinicId])
   @@index([clinicId, createdAt])
   @@map("billing_events")
+}
+
+model EmailLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  clinicId          String?  @map("clinic_id") @db.Uuid
+  userId            String?  @map("user_id") @db.Uuid
+  type              String   // "verification" | "resend_verification" | "welcome" | "reminder" | "weekly_summary" | "password_reset"
+  to                String
+  subject           String
+  html              String   @db.Text
+  status            String   // "sent" | "failed"
+  errorMessage      String?  @map("error_message") @db.Text
+  providerMessageId String?  @map("provider_message_id")
+  sentAt            DateTime @default(now()) @map("sent_at")
+
+  clinic Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([clinicId, sentAt])
+  @@index([userId])
+  @@index([sentAt])
+  @@index([status, sentAt])
+  @@map("email_logs")
 }
 
 model AdminNotification {

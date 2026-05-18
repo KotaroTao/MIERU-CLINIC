@@ -22,7 +22,7 @@ export async function POST(_request: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { email: true, emailVerified: true, name: true, clinic: { select: { name: true } } },
+    select: { email: true, emailVerified: true, name: true, clinicId: true, clinic: { select: { name: true } } },
   })
 
   if (!user) {
@@ -39,7 +39,14 @@ export async function POST(_request: NextRequest) {
   const verifyUrl = `${appUrl}/verify-email?token=${token}`
   const templates = await getEmailTemplates()
   const { subject, html } = buildVerificationEmail(verifyUrl, user.clinic?.name || user.name, templates.verification)
-  const emailSent = await sendMail({ to: user.email, subject, html })
+  const emailSent = await sendMail({
+    to: user.email,
+    subject,
+    html,
+    type: "resend_verification",
+    clinicId: user.clinicId,
+    userId,
+  })
 
   if (!emailSent) {
     // メール送信失敗時は既存トークンを維持（以前の認証リンクを無効化しない）

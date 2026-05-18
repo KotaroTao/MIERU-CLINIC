@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { LogIn, Loader2, Settings2, Sparkles, Crown, Mail } from "lucide-react"
+import Link from "next/link"
+import { LogIn, Loader2, Settings2, Sparkles, Crown, Mail, History } from "lucide-react"
 import { PlanSwitcher } from "@/components/admin/plan-switcher"
 import { DemoSettingsDialog } from "@/components/admin/demo-settings-dialog"
 import { OwnerSwitcher } from "@/components/admin/owner-switcher"
@@ -128,6 +129,14 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
                 {messages.demoSettings.openSettings}
               </button>
             )}
+            <Link
+              href={`/admin/clinics/${clinicId}/email-logs`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-700 transition-colors hover:bg-slate-100"
+            >
+              <History className="h-2.5 w-2.5" />
+              {messages.emailLogs.rowButton}
+            </Link>
           </div>
           <div className="opacity-0 transition-opacity group-hover:opacity-100">
             {loading ? (
