@@ -2,23 +2,29 @@
 
 import { useState } from "react"
 import { Mail, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { messages } from "@/lib/messages"
 
 export function EmailVerificationBanner() {
   const [dismissed, setDismissed] = useState(false)
   const [resending, setResending] = useState(false)
   const [resent, setResent] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   if (dismissed) return null
 
   async function handleResend() {
     setResending(true)
+    setError(null)
     try {
       const res = await fetch("/api/auth/resend-verification", { method: "POST" })
       if (res.ok) {
         setResent(true)
+      } else {
+        const data = await res.json().catch(() => null)
+        setError(data?.error || messages.auth.verifyEmailResendFailed)
       }
+    } catch {
+      setError(messages.auth.verifyEmailResendFailedNetwork)
     } finally {
       setResending(false)
     }
@@ -41,6 +47,7 @@ export function EmailVerificationBanner() {
               {resending ? messages.common.loading : messages.auth.verifyEmailResendLink}
             </button>
           )}
+          {error && <p className="text-sm text-red-700 mt-1">{error}</p>}
         </div>
         <button
           onClick={() => setDismissed(true)}

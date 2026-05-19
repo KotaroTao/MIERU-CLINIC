@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
   const { subject, html } = buildVerificationEmail(verifyUrl, clinicName.trim(), templates.verification)
   let emailSent = false
   try {
-    emailSent = await sendMail({
+    const mailResult = await sendMail({
       to: email.trim().toLowerCase(),
       subject,
       html,
@@ -219,12 +219,18 @@ export async function POST(request: NextRequest) {
       clinicId: result.clinic.id,
       userId: result.user.id,
     })
+    emailSent = mailResult.ok
+    if (!mailResult.ok) {
+      logger.error("Verification email was not sent", {
+        component: "register",
+        email: email.trim().toLowerCase(),
+        reason: mailResult.reason,
+        providerStatus: mailResult.providerStatus,
+        detail: mailResult.detail,
+      })
+    }
   } catch (err) {
     logger.error("Failed to send verification email", { component: "register", error: String(err) })
-  }
-
-  if (!emailSent) {
-    logger.error("Verification email was not sent", { component: "register", email: email.trim().toLowerCase() })
   }
 
   return successResponse({

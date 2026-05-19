@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       userId: admin.id,
     })
 
-    if (sent) {
+    if (sent.ok) {
       sentCount++
       // 送信日を記録
       await prisma.clinic.update({

@@ -53,9 +53,21 @@ export async function GET(request: NextRequest) {
       type: "welcome",
       clinicId: updatedUser.clinicId,
       userId: updatedUser.id,
-    }).catch((err) => {
-      logger.error("Failed to send welcome email", { component: "verify-email", error: String(err) })
     })
+      .then((result) => {
+        if (!result.ok) {
+          logger.error("Welcome email was not sent", {
+            component: "verify-email",
+            userId: updatedUser.id,
+            reason: result.reason,
+            providerStatus: result.providerStatus,
+            detail: result.detail,
+          })
+        }
+      })
+      .catch((err) => {
+        logger.error("Failed to send welcome email", { component: "verify-email", error: String(err) })
+      })
   }
 
   return successResponse({ verified: true })

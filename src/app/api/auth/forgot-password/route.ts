@@ -54,8 +54,14 @@ export async function POST(request: NextRequest) {
       clinicId: user.clinicId,
       userId: user.id,
     })
-    if (!sent) {
-      logger.error("Failed to send password reset email", { component: "forgot-password", email })
+    if (!sent.ok) {
+      logger.error("Failed to send password reset email", {
+        component: "forgot-password",
+        email,
+        reason: sent.reason,
+        providerStatus: sent.providerStatus,
+        detail: sent.detail,
+      })
     }
   }
 
