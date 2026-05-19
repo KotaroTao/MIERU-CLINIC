@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       clinicId: clinic.id,
       userId: admin.id,
     })
-    if (sent) sentCount++
+    if (sent.ok) sentCount++
   }
 
   return successResponse({ sent: sentCount })

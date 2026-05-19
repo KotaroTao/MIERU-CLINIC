@@ -22,14 +22,13 @@ export function VerifyEmailPendingClient({ email }: VerifyEmailPendingClientProp
       const res = await fetch("/api/auth/resend-verification", { method: "POST" })
       if (res.ok) {
         setResent(true)
-      } else if (res.status === 429) {
-        setError(messages.auth.verifyEmailRateLimited)
       } else {
+        // APIが返す具体的なメッセージを優先表示する（失敗理由別に切り替わる）
         const data = await res.json().catch(() => null)
-        setError(data?.error || messages.common.error)
+        setError(data?.error || messages.auth.verifyEmailResendFailed)
       }
     } catch {
-      setError(messages.common.error)
+      setError(messages.auth.verifyEmailResendFailedNetwork)
     } finally {
       setResending(false)
     }

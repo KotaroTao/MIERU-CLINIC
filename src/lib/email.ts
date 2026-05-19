@@ -30,6 +30,33 @@ export type EmailType =
   | "weekly_summary"
   | "password_reset"
 
+/**
+ * sendMail の失敗カテゴリ。
+ * 呼び出し側はこの値に応じてユーザー向けメッセージを切り替えられる。
+ */
+export type SendMailReason =
+  | "ok"
+  | "config_missing_host"   // SMTP_HOST が未設定（本番）
+  | "config_missing_key"    // SMTP_PASS が未設定
+  | "auth_failed"           // Resend 401: APIキー不正
+  | "domain_unverified"     // Resend 403: 送信ドメイン未認証
+  | "validation_error"      // Resend 422: リクエスト不正（宛先不正・本文長すぎ等）
+  | "rate_limited_provider" // Resend 429: API側のレート制限
+  | "api_error"             // Resend 5xx 等のサーバーエラー（リトライ後も失敗）
+  | "network_error"         // ネットワーク到達不能
+  | "unknown"               // それ以外
+
+export interface SendMailResult {
+  ok: boolean
+  reason: SendMailReason
+  /** 障害解析用の詳細メッセージ（ログ向け。ユーザーへ直接表示しない） */
+  detail?: string
+  /** Resend が返した HTTP ステータス（あれば） */
+  providerStatus?: number
+  /** Resend が割り当てたメッセージID（成功時） */
+  providerMessageId?: string | null
+}
+
 interface SendMailOptions {
   to: string
   subject: string
@@ -37,6 +64,16 @@ interface SendMailOptions {
   type: EmailType
   clinicId?: string | null
   userId?: string | null
+}
+
+/** Resend API のステータスコードから失敗カテゴリを判定 */
+function classifyResendStatus(status: number): SendMailReason {
+  if (status === 401) return "auth_failed"
+  if (status === 403) return "domain_unverified"
+  if (status === 422) return "validation_error"
+  if (status === 429) return "rate_limited_provider"
+  if (status >= 500) return "api_error"
+  return "api_error"
 }
 
 /** DBへの送信履歴記録（失敗してもメール処理自体は止めない） */
@@ -88,26 +125,31 @@ function sleep(ms: number): Promise<void> {
 const MAX_RETRIES = 2
 const RETRY_DELAYS = [1000, 3000] // 1秒, 3秒
 
-export async function sendMail(options: SendMailOptions): Promise<boolean> {
+export async function sendMail(options: SendMailOptions): Promise<SendMailResult> {
   const { to, subject, html, type, clinicId, userId } = options
   const smtpHost = process.env.SMTP_HOST
 
   if (smtpHost) {
     const apiKey = process.env.SMTP_PASS
     if (!apiKey) {
+      const detail = "SMTP_PASS が設定されていません"
       logger.error("SMTP_PASS is not configured — cannot authenticate with mail API", {
         component: "sendMail", to, subject,
       })
       await recordEmailLog({
         clinicId, userId, type, to, subject, html,
         status: "failed",
-        errorMessage: "SMTP_PASS が設定されていません",
+        errorMessage: detail,
       })
-      return false
+      return { ok: false, reason: "config_missing_key", detail }
     }
 
     const fromAddress = process.env.SMTP_FROM || "MIERU Clinic <register@mieru-clinic.com>"
     const payload = JSON.stringify({ from: fromAddress, to, subject, html })
+
+    let lastDetail = ""
+    let lastStatus: number | undefined
+    let lastReason: SendMailReason = "unknown"
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
@@ -130,12 +172,20 @@ export async function sendMail(options: SendMailOptions): Promise<boolean> {
             status: "sent",
             providerMessageId: respBody?.id ?? null,
           })
-          return true
+          return {
+            ok: true,
+            reason: "ok",
+            providerStatus: res.status,
+            providerMessageId: respBody?.id ?? null,
+          }
         }
 
         const body = await res.text().catch(() => "")
+        lastStatus = res.status
+        lastDetail = `Resend API エラー (status=${res.status}): ${body.slice(0, 500)}`
+        lastReason = classifyResendStatus(res.status)
 
-        // 一時的なエラーならリトライ
+        // 一時的なエラーならリトライ（5xx, 408, 429）
         if (isTransientError(res.status) && attempt < MAX_RETRIES) {
           logger.warn("Mail API transient error, retrying", {
             component: "sendMail", to, status: res.status, attempt: attempt + 1, body,
@@ -146,15 +196,18 @@ export async function sendMail(options: SendMailOptions): Promise<boolean> {
 
         // リトライ不可のエラー（認証失敗、バリデーションエラー等）
         logger.error("Mail API responded with error", {
-          component: "sendMail", to, subject, status: res.status, body, attempt,
+          component: "sendMail", to, subject, status: res.status, reason: lastReason, body, attempt,
         })
         await recordEmailLog({
           clinicId, userId, type, to, subject, html,
           status: "failed",
-          errorMessage: `Resend API エラー (status=${res.status}): ${body.slice(0, 500)}`,
+          errorMessage: lastDetail,
         })
-        return false
+        return { ok: false, reason: lastReason, detail: lastDetail, providerStatus: res.status }
       } catch (err) {
+        lastDetail = `送信失敗（ネットワークエラー）: ${String(err).slice(0, 500)}`
+        lastReason = "network_error"
+
         // ネットワークエラーはリトライ
         if (attempt < MAX_RETRIES) {
           logger.warn("Mail send network error, retrying", {
@@ -169,24 +222,26 @@ export async function sendMail(options: SendMailOptions): Promise<boolean> {
         await recordEmailLog({
           clinicId, userId, type, to, subject, html,
           status: "failed",
-          errorMessage: `送信失敗（リトライ後）: ${String(err).slice(0, 500)}`,
+          errorMessage: lastDetail,
         })
-        return false
+        return { ok: false, reason: "network_error", detail: lastDetail }
       }
     }
 
-    return false
+    // ループを抜けた = リトライ上限到達後も失敗
+    return { ok: false, reason: lastReason, detail: lastDetail, providerStatus: lastStatus }
   }
 
   // SMTP未設定: 開発環境ではログ出力して成功扱い、本番では警告
   if (process.env.NODE_ENV === "production") {
+    const detail = "SMTP_HOST が設定されていません"
     logger.error("SMTP_HOST is not configured — email not sent", { component: "sendMail", to, subject })
     await recordEmailLog({
       clinicId, userId, type, to, subject, html,
       status: "failed",
-      errorMessage: "SMTP_HOST が設定されていません",
+      errorMessage: detail,
     })
-    return false
+    return { ok: false, reason: "config_missing_host", detail }
   }
 
   logger.info("Mail sent (dev fallback — SMTP_HOST not set)", { component: "sendMail", to, subject })
@@ -195,7 +250,7 @@ export async function sendMail(options: SendMailOptions): Promise<boolean> {
     status: "sent",
     errorMessage: "開発モード: 実送信なし",
   })
-  return true
+  return { ok: true, reason: "ok" }
 }
 
 /** 安全なランダムトークンを生成（タイムスタンプ付きで有効期限判定に使用） */

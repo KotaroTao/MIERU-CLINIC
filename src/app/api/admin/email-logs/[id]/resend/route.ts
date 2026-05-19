@@ -52,9 +52,14 @@ export async function POST(
     userId: log.userId,
   })
 
-  if (!sent) {
-    return errorResponse(messages.emailLogs.resendFailed, 500)
+  if (!sent.ok) {
+    // 管理画面からの再送信なので、原因も返してUIで表示できるようにする
+    return errorResponse(messages.emailLogs.resendFailed, 500, {
+      reason: sent.reason,
+      detail: sent.detail,
+      providerStatus: sent.providerStatus,
+    })
   }
 
-  return successResponse({ sent: true })
+  return successResponse({ sent: true, providerMessageId: sent.providerMessageId ?? null })
 }
