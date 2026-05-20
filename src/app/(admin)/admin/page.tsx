@@ -16,7 +16,6 @@ import {
   TrendingDown,
   AlertTriangle,
   Activity,
-  ChevronDown,
   Trophy,
 } from "lucide-react"
 import { SpecialPlanUrl, GuideUrl } from "@/components/admin/special-plan-url"
@@ -332,15 +331,12 @@ export default async function AdminPage({
         </CardContent>
       </Card>
 
-      {/* Secondary section: collapsible resources */}
-      <details className="group rounded-lg border bg-card">
-        <summary className="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium hover:bg-muted/40">
-          <span className="flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-amber-500" />
-            PX-Value ランキング・登録URL
-          </span>
-          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-        </summary>
+      {/* Secondary section: resources */}
+      <div className="rounded-lg border bg-card">
+        <div className="flex items-center gap-2 p-4 text-sm font-medium">
+          <Trophy className="h-4 w-4 text-amber-500" />
+          PX-Value ランキング・登録URL
+        </div>
         <div className="space-y-3 border-t p-4">
           <SpecialPlanUrl />
           <GuideUrl />
@@ -348,7 +344,7 @@ export default async function AdminPage({
             <PxValueDashboard />
           </Suspense>
         </div>
-      </details>
+      </div>
     </div>
   )
 }
