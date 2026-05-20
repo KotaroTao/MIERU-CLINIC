@@ -810,6 +810,13 @@ export const messages = {
     emailNotSet: "メール未設定",
     emailVerified: "認証済み",
     emailUnverified: "未認証",
+    // メール手動認証
+    manualVerifyEmail: "メール認証をスキップ",
+    manualVerifyEmailTitle: "メール認証を手動で承認",
+    manualVerifyEmailDesc: "メールが届かない場合など、管理者がメール認証をスキップして承認できます。対象ユーザーが正当であることを確認してから実行してください。",
+    manualVerifyEmailSubmit: "認証済みにする",
+    manualVerifyEmailSuccess: "メール認証を承認しました",
+    manualVerifyEmailFailed: "メール認証の承認に失敗しました",
     emailChangeSuccess: "メールアドレスを変更しました",
     emailChangeTitle: "メールアドレスを変更",
     noAdminUsers: "管理者ユーザーがいません",

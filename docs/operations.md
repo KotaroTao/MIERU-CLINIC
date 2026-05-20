@@ -5,7 +5,7 @@
 - **CI/CD**: main push → GitHub Actions → Docker build → Cloud Run自動デプロイ
 - **設定ファイル**: `Dockerfile`, `.github/workflows/deploy.yml`, `deploy/docker-entrypoint.sh`
 - **Cloud SQL**: PostgreSQL 15, `mieru-clinic-db`（日次バックアップ+PITR）
-- **環境変数**: DATABASE_URL, AUTH_SECRET, AUTH_URL, NEXT_PUBLIC_APP_URL（Cloud Run環境変数として直接設定、Secrets Managerではない）
+- **環境変数**: DATABASE_URL, AUTH_SECRET, AUTH_URL, NEXT_PUBLIC_APP_URL, SMTP_HOST, SMTP_PASS, SMTP_FROM（Cloud Run環境変数として直接設定、Secrets Managerではない）
 
 ## 本番DB操作
 
@@ -29,6 +29,43 @@ kill %1
 
 - **`gcloud sql users set-password` でDBユーザーのパスワードを変更しないこと** — Cloud Runの環境変数に設定されたDATABASE_URLと不整合が発生し、本番サイトが即座にダウンする
 - パスワードが不明な場合は `gcloud run services describe mieru-clinic --region=asia-northeast1 --format=json` でCloud RunのDATABASE_URL環境変数から確認する
+
+## メール設定（Resend API）
+
+確認メール・パスワードリセットメールの送信には [Resend](https://resend.com) を使用。
+**未設定のまま本番デプロイすると、登録確認メールが送信されずユーザーが認証できない。**
+
+### 必須の Cloud Run 環境変数
+
+| 変数名 | 値の例 | 説明 |
+|--------|--------|------|
+| `SMTP_HOST` | `https://api.resend.com/emails` | Resend API エンドポイント（固定値） |
+| `SMTP_PASS` | `re_xxxxxxxxxxxx` | Resend APIキー（Resendダッシュボードで発行） |
+| `SMTP_FROM` | `MIERU Clinic <register@mieru-clinic.com>` | 送信元アドレス（Resendで認証済みドメインが必要） |
+
+### 設定手順
+
+1. [resend.com](https://resend.com) でアカウント作成
+2. 「Domains」でドメイン `mieru-clinic.com` を追加し、DNS設定（DKIM等）を完了
+3. 「API Keys」でAPIキーを発行（送信権限あり）
+4. Cloud Run の環境変数に上記3つを追加:
+   ```bash
+   gcloud run services update mieru-clinic \
+     --region=asia-northeast1 \
+     --set-env-vars="SMTP_HOST=https://api.resend.com/emails,SMTP_PASS=re_xxx,SMTP_FROM=MIERU Clinic <register@mieru-clinic.com>"
+   ```
+
+### メール未設定時の応急処置
+
+メール設定が完了するまでの間、登録済みユーザーのメール認証は管理者画面から手動承認できる:
+
+1. `/admin` を開く
+2. 対象クリニックの「未認証」バッジをクリック
+3. 「認証済みにする」を実行
+
+### メール送信履歴の確認
+
+`/admin` の各クリニック行にある「メール履歴」ボタン、または `/admin/clinics/{id}/email-logs` で送信成否・エラー詳細を確認できる。
 
 ## デモデータ（`prisma/seed.ts`）
 
