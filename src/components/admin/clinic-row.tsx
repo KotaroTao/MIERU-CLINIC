@@ -8,6 +8,7 @@ import { DemoSettingsDialog } from "@/components/admin/demo-settings-dialog"
 import { OwnerSwitcher } from "@/components/admin/owner-switcher"
 import { EmailSwitcher } from "@/components/admin/email-switcher"
 import { DeleteClinicDialog } from "@/components/admin/delete-clinic-dialog"
+import { ManualVerifyEmailDialog } from "@/components/admin/manual-verify-email-dialog"
 import { PLANS } from "@/lib/constants"
 import { messages } from "@/lib/messages"
 import type { PlanTier } from "@/types"
@@ -38,9 +39,11 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
   const [ownerDialogOpen, setOwnerDialogOpen] = useState(false)
   const [emailDialogOpen, setEmailDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [manualVerifyDialogOpen, setManualVerifyDialogOpen] = useState(false)
   const [currentPlan, setCurrentPlan] = useState<PlanTier>(plan ?? "free")
   const [ownerName, setOwnerName] = useState(initialOwnerName ?? null)
   const [ownerEmail, setOwnerEmail] = useState(initialOwnerEmail ?? null)
+  const [emailVerified, setEmailVerified] = useState(ownerEmailVerified)
 
   async function handleClick() {
     setLoading(true)
@@ -81,6 +84,11 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
   function handleDeleteClick(e: React.MouseEvent) {
     e.stopPropagation()
     setDeleteDialogOpen(true)
+  }
+
+  function handleManualVerifyClick(e: React.MouseEvent) {
+    e.stopPropagation()
+    setManualVerifyDialogOpen(true)
   }
 
   const planDef = PLANS[currentPlan]
@@ -127,7 +135,7 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
               <Mail className="h-2.5 w-2.5" />
               {ownerEmail ?? messages.admin.emailNotSet}
             </button>
-            {ownerEmailVerified === true && (
+            {emailVerified === true && (
               <span
                 className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-medium text-emerald-700"
                 title={messages.admin.emailVerified}
@@ -136,14 +144,16 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
                 {messages.admin.emailVerified}
               </span>
             )}
-            {ownerEmailVerified === false && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-medium text-rose-700"
-                title={messages.admin.emailUnverified}
+            {emailVerified === false && (
+              <button
+                type="button"
+                onClick={handleManualVerifyClick}
+                className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-medium text-rose-700 transition-colors hover:bg-rose-100"
+                title={messages.admin.manualVerifyEmail}
               >
                 <ShieldAlert className="h-2.5 w-2.5" />
                 {messages.admin.emailUnverified}
-              </span>
+              </button>
             )}
             {currentPlan === "demo" && (
               <button
@@ -236,6 +246,17 @@ export function ClinicRow({ clinicId, clinicName, plan, ownerUserId, ownerName: 
           clinicId={clinicId}
           clinicName={clinicName}
           onClose={() => setDeleteDialogOpen(false)}
+        />
+      )}
+
+      {/* Manual email verification dialog */}
+      {manualVerifyDialogOpen && (
+        <ManualVerifyEmailDialog
+          clinicId={clinicId}
+          clinicName={clinicName}
+          ownerEmail={ownerEmail}
+          onClose={() => setManualVerifyDialogOpen(false)}
+          onVerified={() => setEmailVerified(true)}
         />
       )}
     </>
